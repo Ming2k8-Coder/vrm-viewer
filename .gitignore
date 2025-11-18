@@ -40,3 +40,7 @@ build/
 *.backup
 *.bak
 *.orig
+
+# VRM/VRMA
+*.vrm
+*.vrma
