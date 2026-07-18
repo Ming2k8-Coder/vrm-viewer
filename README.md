@@ -14,8 +14,12 @@ A web-based VRM (Virtual Reality Model) viewer with VRMA (VRM Animation) support
 - 📱 **Responsive Design**: Works on desktop and mobile devices
 - 🎭 **VRM Model Support**: Load and display VRM 1.0 models
 - 🎬 **VRMA Animation**: Play custom VRMA animation files
-- 🎮 **Interactive Controls**: Play, pause, and stop animations
-- 🎨 **Modern UI**: Clean, gradient-based interface
+- 📂 **Drag & Drop**: Load your own `.vrm`/`.vrma` files by dropping them onto the page or using the file picker
+- 🎮 **Interactive Controls**: Play, pause, and stop animations with smooth crossfades between clips
+- 🦴 **Pose Editing**: Rotate every humanoid bone (including fingers) with sliders, or click a bone handle in the 3D view and drag the rotation gizmo directly
+- 😊 **Facial Expressions**: Control every expression the model defines (emotions, visemes, blinking, custom clips) with weight sliders
+- 👀 **Gaze Control**: Aim the eyes with yaw/pitch sliders, or let them follow your mouse cursor
+- 🎛️ **Collapsible UI**: Tabbed control panel (Animation / Pose / Face) that can be hidden entirely with the ☰ toggle
 - ⚡ **Fast Performance**: Optimized rendering and animations
 
 ## Demo
@@ -95,16 +99,36 @@ vrm_viewer/
 
 ### Loading VRM Models
 
-The viewer automatically loads the VRM model specified in `index.html`. To use your own model:
+The viewer automatically loads the bundled `sample.vrm` on startup. To use your own model, either:
 
-1. Place your `.vrm` file in the `VRM/` directory
-2. Update the `VRM_MODEL_URL` variable in `index.html`
+- **Drag and drop** a `.vrm` file anywhere onto the page, or
+- Click **"Open .vrm / .vrma…"** and pick a `.vrm` file
+
+The new model replaces the current one immediately; any previously loaded VRMA buttons stay available and can be re-selected to build a clip against the new model.
 
 ### Playing VRMA Animations
 
 1. Wait for the VRM model to load completely
-2. Click any of the VRMA animation buttons to select an animation (Angry, Blush, Clapping, Goodbye, Jump, LookAround, Relax, Sad, Sleepy, Surprised, or Thinking)
-3. Use the playback controls to manage animation
+2. Click any of the VRMA animation buttons to select an animation (Angry, Blush, Clapping, Goodbye, Jump, LookAround, Relax, Sad, Sleepy, Surprised, or Thinking) — or drag and drop your own `.vrma` file / use the file picker to add it as a new button
+3. Use the playback controls to manage animation; switching to a new clip while one is already playing crossfades smoothly instead of snapping to the default pose
+
+### Editing Poses (Pose Tab)
+
+Switch to the **Pose** tab to sculpt the model's pose by hand:
+
+- Every humanoid bone has X/Y/Z rotation sliders (in degrees); finger and other detail bones are tucked into a collapsible section
+- With **3D Bone Handles** enabled, click a sphere on the model to select that bone, then drag the rotation gizmo directly in the viewport — the sliders and gizmo stay in sync both ways
+- **Reset Pose** returns every bone to the rest pose
+- Opening the Pose tab while an animation is playing freezes the current frame so you can edit from it; pressing Play later hands the skeleton back to the animation (edits are not blended)
+
+### Editing Expressions & Gaze (Face Tab)
+
+Switch to the **Face** tab to control the model's face:
+
+- Expression sliders (0–1 weight) are generated from whatever the loaded model defines: emotion presets, mouth visemes, blinking, and any custom expressions
+- **Look At** yaw/pitch sliders aim the eyes manually, or enable **Follow Mouse** to have the gaze track your cursor (works even while an animation plays)
+- **Reset Face** zeroes all expressions and re-centers the gaze
+- Like the Pose tab, opening it mid-animation freezes the current facial state for editing
 
 ### Camera Controls
 
@@ -114,10 +138,12 @@ The viewer automatically loads the VRM model specified in `index.html`. To use y
 
 ### Controls
 
+- **☰ Toggle**: Show or hide the whole control panel (animations, pose edits, and gaze tracking keep running while it's hidden)
+- **Animation / Pose / Face Tabs**: Switch between playback, bone posing, and facial controls
 - **VRMA Animation Buttons**: Select and load different animations
 - **Play**: Start or resume animation playback
 - **Pause**: Pause/unpause the current animation
-- **Stop**: Stop animation and reset to default pose
+- **Stop**: Stop animation and reset pose, expressions, and gaze to default
 
 ## Technical Details
 
@@ -147,8 +173,7 @@ The viewer automatically loads the VRM model specified in `index.html`. To use y
 
 1. Create or obtain VRMA animation files
 2. Place them in the `VRMA/` directory
-3. Update the `VRMA_ANIMATION_URLS` array in `index.html`
-4. Add corresponding buttons in the HTML
+3. Add a `{ name, url }` entry to the `VRMA_ANIMATIONS` array in `index.html` — its button is generated automatically, no HTML changes needed
 
 ### Styling
 
