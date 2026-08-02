@@ -12,7 +12,12 @@ A web-based VRM (Virtual Reality Model) viewer with VRMA (VRM Animation) support
 - 🎭 **VRM Model Support**: Load and display VRM 1.0 models
 - 🎬 **VRMA Animation**: Play custom VRMA animation files
 - 🎮 **Interactive Controls**: Play, pause, and stop animations
-- 🎨 **Modern UI**: Clean, gradient-based interface
+- 🦴 **Pose Editing**: Rotate every humanoid bone (including fingers) with sliders, or click a bone handle in the 3D view and drag the rotation gizmo directly
+- 😊 **Facial Expressions**: Control every expression the model defines (emotions, visemes, blinking, custom clips) with weight sliders
+- 👀 **Gaze Control**: Aim the eyes with yaw/pitch sliders, or let them follow your mouse cursor
+- 💡 **Lighting & Behaviors**: Adjust directional and ambient light, and toggle auto-blinking or standby motion
+- 🎛️ **Collapsible UI**: Tabbed control panel (Features / Animation / Pose / Face) that can be hidden entirely with the ☰ toggle
+- 🌐 **Automated Localization**: Automatically switches between English and Japanese UI based on browser preference (with manual override)
 - ⚡ **Fast Performance**: Optimized rendering and animations
 - 📂 **Drag & Drop**: Easily load .vrm and .vrma files by dragging them into the window
 
@@ -38,7 +43,7 @@ Open `index.html` in a web browser to see the demo. The viewer includes:
 
 ```text
 vrm_viewer/
-├── index.html              # Main viewer application
+├── index.html              # Main viewer application (Dual Language)
 ├── VRM/
 │   └── sample.vrm          # Sample VRM model
 ├── VRMA/
@@ -114,12 +119,14 @@ The viewer automatically loads the VRM model specified in `index.html`. To use y
 - **Pan**: Right-click and drag to move the camera horizontally/vertically
 - **Zoom**: Scroll with mouse wheel to zoom in/out
 
-### Controls
+### UI Controls
 
 - **VRMA Animation Buttons**: Select and load different animations
 - **Play**: Start or resume animation playback
 - **Pause**: Pause/unpause the current animation
 - **Stop**: Stop animation and reset to default pose
+- **Bone Handles**: In the Pose tab, click a bone handle to manipulate the model's limbs with the 3D gizmo.
+- **Sliders**: Dynamically interact with bone rotations, facial expressions, look-at targets, and scene lighting.
 
 ## Technical Details
 
