@@ -1,10 +1,10 @@
-English | [日本語](README-jp.md)
-
 # VRM Viewer with VRMA Animation
+
+English | [日本語](README-jp.md)
 
 A web-based VRM (Virtual Reality Model) viewer with VRMA (VRM Animation) support built using Three.js and the three-vrm library.
 
-[Try the Demo](https://tk256ailab.github.io/vrm-viewer/)
+**[Try the Demo →](https://tk256ailab.github.io/vrm-viewer/)**
 
 ## Features
 
@@ -14,15 +14,25 @@ A web-based VRM (Virtual Reality Model) viewer with VRMA (VRM Animation) support
 - 🎮 **Interactive Controls**: Play, pause, and stop animations
 - 🎨 **Modern UI**: Clean, gradient-based interface
 - ⚡ **Fast Performance**: Optimized rendering and animations
+- 📂 **Drag & Drop**: Easily load .vrm and .vrma files by dragging them into the window
 
 ## Demo
 
 Open `index.html` in a web browser to see the demo. The viewer includes:
 
-- A sample VRM model (ロング女の子1.vrm)
-- Two original VRMA animation examples:
-  - **original_01**: Fast head nod animation (6 seconds)
-  - **original_02**: Fast arm wave animation (4 seconds)
+- A sample VRM model (sample.vrm)
+- Eleven VRMA animation examples:
+  - **Angry**: Angry emotion animation
+  - **Blush**: Blushing emotion animation
+  - **Clapping**: Clapping hands animation
+  - **Goodbye**: Waving goodbye animation
+  - **Jump**: Jumping action animation
+  - **LookAround**: Looking around animation
+  - **Relax**: Relaxed pose animation
+  - **Sad**: Sad emotion animation
+  - **Sleepy**: Sleepy emotion animation
+  - **Surprised**: Surprised emotion animation
+  - **Thinking**: Thinking pose animation
 
 ## Project Structure
 
@@ -30,15 +40,37 @@ Open `index.html` in a web browser to see the demo. The viewer includes:
 vrm_viewer/
 ├── index.html              # Main viewer application
 ├── VRM/
-│   └── sample.vrm     # Sample VRM model
+│   └── sample.vrm          # Sample VRM model
 ├── VRMA/
-│   ├── original_01.vrma    # Custom head nod animation
-│   └── original_02.vrma    # Custom arm wave animation
+│   ├── Angry.vrma          # Angry emotion animation
+│   ├── Blush.vrma          # Blushing emotion animation
+│   ├── Clapping.vrma       # Clapping hands animation
+│   ├── Goodbye.vrma        # Waving goodbye animation
+│   ├── Jump.vrma           # Jumping action animation
+│   ├── LookAround.vrma     # Looking around animation
+│   ├── Relax.vrma          # Relaxed pose animation
+│   ├── Sad.vrma            # Sad emotion animation
+│   ├── Sleepy.vrma         # Sleepy emotion animation
+│   ├── Surprised.vrma      # Surprised emotion animation
+│   └── Thinking.vrma       # Thinking pose animation
 ├── README.md               # This file
-└── README-jp.md           # Japanese documentation
+└── README-jp.md            # Japanese documentation
 ```
 
 ## Quick Start
+
+### Method 1: GitHub Pages (Recommended)
+
+1. **Fork or upload** this repository to GitHub
+2. **Enable GitHub Pages**:
+   - Go to your repository's Settings
+   - Scroll down to "Pages" section
+   - Under "Source", select "Deploy from a branch"
+   - Choose "main" branch and "/ (root)" folder
+   - Click "Save"
+3. **Access your demo** at `https://YOUR-USERNAME.github.io/YOUR-REPOSITORY-NAME/`
+
+### Method 2: Local Development
 
 1. **Clone or download** this repository
 2. **Start a local web server** (required for loading files):
@@ -54,7 +86,7 @@ vrm_viewer/
    ```
 3. **Open your browser** and navigate to `http://localhost:8000`
 4. **Load the VRM model** (automatically loads on page load)
-5. **Select animations** using the VRMA buttons
+5. **Select animations** using the VRMA buttons or upload your own files
 6. **Control playback** with Play, Pause, and Stop buttons
 
 ## Usage
@@ -63,16 +95,22 @@ vrm_viewer/
 
 The viewer automatically loads the VRM model specified in `index.html`. To use your own model:
 
-1. Place your `.vrm` file in the `VRM/` directory
-2. Update the `VRM_MODEL_URL` variable in `index.html`
+1. **Drag and Drop** your `.vrm` file into the window, OR
+2. Click **Upload VRM** button to select a file from your computer.
 
 ### Playing VRMA Animations
 
 1. Wait for the VRM model to load completely
-2. Click any of the VRMA animation buttons:
-   - **original_01**: Quick head nodding animation
-   - **original_02**: Dynamic arm waving animation
-3. Use the playback controls to manage animation
+2. **Drag and Drop** your `.vrma` file, OR
+3. Click **Upload VRMA** to select a file, OR
+4. Click any of the Sample VRMA animation buttons (Angry, Blush, etc.)
+5. Use the playback controls to manage animation
+
+### Camera Controls
+
+- **Rotate**: Left-click and drag to rotate the camera around the model
+- **Pan**: Right-click and drag to move the camera horizontally/vertically
+- **Zoom**: Scroll with mouse wheel to zoom in/out
 
 ### Controls
 
@@ -138,5 +176,3 @@ This project is for demonstration purposes. Please ensure you have appropriate r
 - [three-vrm](https://github.com/pixiv/three-vrm) - VRM support for Three.js
 - [Three.js](https://threejs.org/) - 3D graphics foundation
 - VRM Consortium - VRM format specification
-
----

@@ -1,10 +1,12 @@
-[English](README.md) | 日本語
-
 # VRM Viewer with VRMA Animation
+
+[English](README.md) | [日本語](README-jp.md)
 
 Three.jsとthree-vrmライブラリを使用して構築された、VRMA（VRMアニメーション）サポート付きのWebベースVRM（Virtual Reality Model）ビューアーです。
 
-[デモを試す](https://tk256ailab.github.io/vrm-viewer/)
+## 🎮 ライブデモ
+
+**[デモを試す →](https://tk256ailab.github.io/vrm-viewer/)**
 
 ## 特徴
 
@@ -19,10 +21,19 @@ Three.jsとthree-vrmライブラリを使用して構築された、VRMA（VRM�
 
 `index.html`をWebブラウザで開くとデモを確認できます。ビューアーには以下が含まれています：
 
-- サンプルVRMモデル（ロング女の子1.vrm）
-- 2つのオリジナルVRMAアニメーション例：
-  - **original_01**: 高速頭うなずきアニメーション（6秒）
-  - **original_02**: 高速腕振りアニメーション（4秒）
+- サンプルVRMモデル（sample.vrm）
+- 11種類のVRMAアニメーション例：
+  - **Angry**: 怒り感情のアニメーション
+  - **Blush**: 照れる感情のアニメーション
+  - **Clapping**: 拍手するアニメーション
+  - **Goodbye**: さよならの手振りアニメーション
+  - **Jump**: ジャンプ動作のアニメーション
+  - **LookAround**: 周りを見回すアニメーション
+  - **Relax**: リラックスポーズのアニメーション
+  - **Sad**: 悲しい感情のアニメーション
+  - **Sleepy**: 眠そうな感情のアニメーション
+  - **Surprised**: 驚いた感情のアニメーション
+  - **Thinking**: 考え込むポーズのアニメーション
 
 ## プロジェクト構造
 
@@ -32,13 +43,35 @@ vrm_viewer/
 ├── VRM/
 │   └── sample.vrm     # サンプルVRMモデル
 ├── VRMA/
-│   ├── original_01.vrma    # カスタム頭うなずきアニメーション
-│   └── original_02.vrma    # カスタム腕振りアニメーション
+│   ├── Angry.vrma          # 怒り感情のアニメーション
+│   ├── Blush.vrma          # 照れる感情のアニメーション
+│   ├── Clapping.vrma       # 拍手するアニメーション
+│   ├── Goodbye.vrma        # さよならの手振りアニメーション
+│   ├── Jump.vrma           # ジャンプ動作のアニメーション
+│   ├── LookAround.vrma     # 周りを見回すアニメーション
+│   ├── Relax.vrma          # リラックスポーズのアニメーション
+│   ├── Sad.vrma            # 悲しい感情のアニメーション
+│   ├── Sleepy.vrma         # 眠そうな感情のアニメーション
+│   ├── Surprised.vrma      # 驚いた感情のアニメーション
+│   └── Thinking.vrma       # 考え込むポーズのアニメーション
 ├── README.md               # 英語版ドキュメント
 └── README-jp.md           # このファイル
 ```
 
 ## クイックスタート
+
+### 方法1: GitHub Pages（推奨）
+
+1. **このリポジトリをGitHubにフォークまたはアップロード**
+2. **GitHub Pagesを有効化**：
+   - リポジトリのSettingsに移動
+   - 「Pages」セクションまでスクロール
+   - 「Source」で「Deploy from a branch」を選択
+   - ブランチを「main」、フォルダを「/ (root)」に設定
+   - 「Save」をクリック
+3. **デモにアクセス** `https://YOUR-USERNAME.github.io/YOUR-REPOSITORY-NAME/`
+
+### 方法2: ローカル開発
 
 1. **このリポジトリをクローンまたはダウンロード**
 2. **ローカルWebサーバーを起動**（ファイル読み込みに必要）：
@@ -69,10 +102,14 @@ vrm_viewer/
 ### VRMAアニメーションの再生
 
 1. VRMモデルの読み込みが完全に完了するまで待機
-2. VRMAアニメーションボタンのいずれかをクリック：
-   - **original_01**: 素早い頭うなずきアニメーション
-   - **original_02**: ダイナミックな腕振りアニメーション
+2. VRMAアニメーションボタンのいずれかをクリックしてアニメーションを選択（Angry、Blush、Clapping、Goodbye、Jump、LookAround、Relax、Sad、Sleepy、Surprised、Thinking）
 3. 再生コントロールを使用してアニメーションを管理
+
+### カメラ操作
+
+- **回転**: 左クリックしながらドラッグでモデルを中心にカメラを回転
+- **並行移動**: 右クリックしながらドラッグでカメラを水平/垂直方向に移動
+- **ズーム**: マウスホイールでズームイン/アウト
 
 ### コントロール
 
@@ -121,28 +158,6 @@ vrm_viewer/
 - コントロールパネルの外観
 - レスポンシブブレークポイント
 
-## アニメーション作成について
-
-含まれているオリジナルアニメーション（original_01.vrma、original_02.vrma）は以下の特徴があります：
-
-### original_01.vrma - 頭うなずきアニメーション
-- **動作**: 自然な頭のうなずき動作
-- **継続時間**: 6秒（高速化済み）
-- **特徴**: 微細な呼吸アニメーションも含む
-- **技術**: VRMヒューマノイドボーン仕様に準拠した正確なボーンマッピングで作成
-
-### original_02.vrma - 腕振りアニメーション
-- **動作**: 左右の腕を交互に振る動作
-- **継続時間**: 4秒（高速化済み）
-- **特徴**: 上腕と前腕が連動した自然な動き
-- **技術**: VRMヒューマノイドボーン仕様に準拠
-
-両アニメーションとも：
-- ✅ 完全オリジナルで著作権フリー
-- ✅ VRM 1.0仕様完全対応
-- ✅ 709フレームの高精度アニメーション
-- ✅ 91チャンネルの完全な構造
-
 ## ライセンス
 
 このプロジェクトはデモンストレーション目的です。使用するVRMモデルとアニメーションについて適切な権利を持っていることを確認してください。
@@ -160,5 +175,3 @@ vrm_viewer/
 - [three-vrm](https://github.com/pixiv/three-vrm) - Three.js用VRMサポート
 - [Three.js](https://threejs.org/) - 3Dグラフィックス基盤
 - VRMコンソーシアム - VRMフォーマット仕様
-
----

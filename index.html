@@ -12,6 +12,8 @@
 				margin: 0;
 				font-family: 'Inter', sans-serif;
 				overflow: hidden;
+				background-color: #222;
+				color: white;
 			}
 			canvas {
 				display: block;
@@ -23,7 +25,7 @@
 				position: absolute;
 				top: 10px;
 				left: 10px;
-				background: rgba(0, 0, 0, 0.8);
+				background: rgba(0, 0, 0, 0.85);
 				color: white;
 				padding: 20px;
 				border-radius: 12px;
@@ -31,161 +33,262 @@
 				display: flex;
 				flex-direction: column;
 				gap: 12px;
-				box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+				box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+				max-width: 320px;
+				max-height: 90vh;
+				overflow-y: auto;
 				transition: transform 0.3s ease, opacity 0.3s ease;
 			}
 			.controls.hidden {
-				transform: translateX(-110%);
+				transform: translateX(-120%);
 				opacity: 0;
 				pointer-events: none;
 			}
-
-			/* --- Status Panel Styling --- */
-			#statusPanel {
-				position: absolute;
-				top: 10px;
-				right: 10px;
-				background: rgba(0, 0, 0, 0.8);
-				color: #aaffaa; /* Light green text for status */
-				padding: 10px 15px;
-				border-radius: 12px;
-				z-index: 100;
-				font-size: 14px;
-				font-family: monospace;
-				box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+			.controls::-webkit-scrollbar {
+				width: 6px;
 			}
-			#statusPanel div {
-				margin-bottom: 5px;
+			.controls::-webkit-scrollbar-thumb {
+				background: #555;
+				border-radius: 3px;
+			}
+
+			/* --- Sections --- */
+			.control-section {
+				display: flex;
+				flex-direction: column;
+				gap: 8px;
+				padding-bottom: 10px;
+				border-bottom: 1px solid #444;
+			}
+			.control-section:last-child {
+				border-bottom: none;
+			}
+			.control-section h3 {
+				margin: 0;
+				font-size: 14px;
+				color: #aaa;
+				text-transform: uppercase;
+				border-bottom: 1px solid #444;
+				padding-bottom: 4px;
+				margin-bottom: 8px;
 			}
 			
-			/* --- Toggle Button Styling (outside main panel) --- */
+			/* --- Buttons & Inputs --- */
+			.file-input-group {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+				align-items: center;
+			}
+			.file-input-group label.custom-file-label {
+				cursor: pointer;
+				flex: 1;
+				min-width: 100px;
+				padding: 8px 12px;
+				background: linear-gradient(145deg, #6a82fb, #fc5c7d);
+				color: white;
+				border-radius: 6px;
+				font-weight: bold;
+				font-size: 13px;
+				text-align: center;
+				transition: transform 0.1s ease;
+				box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+			}
+			.file-input-group label.custom-file-label:hover {
+				transform: translateY(-2px);
+				filter: brightness(1.1);
+			}
+			.file-input-group input[type="file"] {
+				display: none;
+			}
+			.file-name {
+				font-size: 12px;
+				color: #bbb;
+				word-break: break-all;
+			}
+
+			.vrma-grid {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 5px;
+			}
+
+			button {
+				padding: 8px 12px;
+				background: #444;
+				color: white;
+				border: none;
+				border-radius: 6px;
+				cursor: pointer;
+				font-size: 12px;
+				transition: background 0.2s;
+				font-weight: bold;
+			}
+			button:hover {
+				background: #555;
+			}
+			button:active {
+				transform: translateY(1px);
+			}
+			button:disabled {
+				background: #333;
+				color: #666;
+				cursor: not-allowed;
+			}
+			
+			button.action-btn {
+				background: linear-gradient(145deg, #4CAF50, #2e8b57);
+				flex: 1;
+			}
+			button.action-btn:hover {
+				filter: brightness(1.1);
+			}
+
+			.playback-controls {
+				display: flex;
+				gap: 5px;
+			}
+			.playback-controls button {
+				flex: 1;
+				background: #2196f3;
+			}
+			
+			/* --- Toggle Button --- */
 			#toggleControlsBtn {
 				position: absolute;
 				top: 10px;
 				left: 10px;
 				z-index: 101;
-				padding: 8px 15px;
-				background: #2196f3; /* Blue background for visibility */
+				padding: 8px 12px;
+				background: #2196f3;
 				color: white;
-				border: none;
 				border-radius: 6px;
-				cursor: pointer;
+				border: none;
+				transition: left 0.3s ease;
+			}
+			#toggleControlsBtn.open {
+				left: 340px;
+			}
+
+			/* --- Info Panel --- */
+			#infoPanel {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				background: rgba(0, 0, 0, 0.85);
+				color: #eee;
+				padding: 15px;
+				border-radius: 12px;
+				z-index: 100;
+				width: 250px;
+				font-size: 13px;
+				font-family: monospace;
+				box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+				pointer-events: none; /* Let drag drop pass through empty areas if needed, but usually we want to click */
+				pointer-events: auto;
+			}
+			#infoPanel h3 {
+				margin-top: 0;
+				margin-bottom: 10px;
+				border-bottom: 1px solid #555;
+				padding-bottom: 5px;
+				font-family: sans-serif;
+			}
+			.info-row {
+				display: flex;
+				justify-content: space-between;
+				margin-bottom: 4px;
+				border-bottom: 1px solid #333;
+				padding-bottom: 2px;
+			}
+			.info-label {
+				color: #aaa;
+			}
+			.info-value {
 				font-weight: bold;
-				transition: background 0.2s ease, transform 0.1s ease;
-				box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-				transition: left 0.3s ease; /* Transition for position change */
+				color: #aaffaa;
 			}
-			#toggleControlsBtn.controls-visible {
-				left: 310px; /* Position next to the controls when visible (adjust based on panel width) */
+
+			/* --- Drag Overlay --- */
+			#dragOverlay {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background: rgba(255, 255, 255, 0.5); /* Changed to partial transparency */
+				z-index: 999;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 32px;
+				color: #333;
+				font-weight: bold;
+				pointer-events: none;
+				opacity: 0;
+				transition: opacity 0.2s;
+				backdrop-filter: blur(5px);
 			}
-			#toggleControlsBtn:hover {
-				background: #1976d2;
+			#dragOverlay.active {
+				opacity: 1;
 			}
 			
-			/* --- Input and General Control Styling (from previous version) --- */
-			.controls div {
-				display: flex;
-				flex-wrap: wrap;
-				align-items: center;
-				gap: 10px;
-			}
-			.controls label {
-				min-width: 90px;
-				font-weight: bold;
-				color: #e0e0e0;
-			}
-			.controls .file-input-group label.custom-file-label {
-				cursor: pointer;
-				flex: 1;
-				min-width: 80px;
-				padding: 10px 15px;
-				background: linear-gradient(145deg, #6a82fb, #fc5c7d);
-				color: white;
-				border: none;
-				border-radius: 6px;
-				font-weight: bold;
-				transition: background 0.3s ease, transform 0.1s ease;
-				box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-				text-transform: uppercase;
-				letter-spacing: 0.5px;
+			.status-bar {
+				margin-top: 8px;
+				font-size: 12px;
+				color: #aaa;
 				text-align: center;
-			}
-			.controls .file-input-group label.custom-file-label:hover {
-				background: linear-gradient(145deg, #5c75e8, #e84c6c);
-				transform: translateY(-2px);
-			}
-			.controls .file-input-group input[type="file"] {
-				display: none;
-			}
-			.controls button {
-				flex: 1;
-				min-width: 80px;
-				padding: 10px 15px;
-				background: linear-gradient(145deg, #6a82fb, #fc5c7d);
-				color: white;
-				border: none;
-				border-radius: 6px;
-				cursor: pointer;
-				font-weight: bold;
-				transition: background 0.3s ease, transform 0.1s ease;
-				box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-				text-transform: uppercase;
-				letter-spacing: 0.5px;
-			}
-			.controls button:hover {
-				background: linear-gradient(145deg, #5c75e8, #e84c6c);
-				transform: translateY(-2px);
-			}
-			.controls button:active {
-				transform: translateY(1px);
-			}
-			.controls button:disabled {
-				background: #666;
-				cursor: not-allowed;
-				opacity: 0.7;
-				box-shadow: none;
-				transform: none;
-			}
-			.status-text {
-				margin-top: 10px;
-				font-size: 14px;
-				color: #ccc;
-				text-align: center;
+				font-style: italic;
 			}
 		</style>
 	</head>
 
 	<body>
-		<button id="toggleControlsBtn">Hide Menu</button>
+		<div id="dragOverlay">Drop VRM or VRMA here</div>
+		
+		<button id="toggleControlsBtn" class="open">&lt;</button>
 		
 		<div class="controls" id="controlsPanel">
-			<div class="file-input-group">
-				<label>VRM Model:</label>
-				<input type="file" id="vrmFileInput" accept=".vrm" />
-				<label for="vrmFileInput" class="custom-file-label">Open VRM</label>
-				<span id="vrmFileName">No file selected</span>
+			<div class="control-section">
+				<h3>Model (VRM)</h3>
+				<div class="file-input-group">
+					<input type="file" id="vrmFileInput" accept=".vrm" />
+					<label for="vrmFileInput" class="custom-file-label">Upload VRM</label>
+				</div>
+				<div id="vrmFileName" class="file-name">Default: sample.vrm</div>
 			</div>
 			
-			<div class="file-input-group">
-				<label>VRMA Animation:</label>
-				<input type="file" id="vrmaFileInput" accept=".vrma" disabled />
-				<label for="vrmaFileInput" class="custom-file-label" id="vrmaFileLabel">Open VRMA</label>
-				<span id="vrmaFileName">No file selected</span>
+			<div class="control-section">
+				<h3>Animation (VRMA)</h3>
+				<div class="file-input-group">
+					<input type="file" id="vrmaFileInput" accept=".vrma" disabled />
+					<label for="vrmaFileInput" class="custom-file-label" id="vrmaFileLabel">Upload VRMA</label>
+				</div>
+				<div id="vrmaFileName" class="file-name">No animation selected</div>
+				
+				<div style="margin-top: 8px; font-size: 11px; color: #aaa;">Sample Animations:</div>
+				<div class="vrma-grid" id="sampleAnimations">
+					<!-- Buttons injected by JS -->
+				</div>
 			</div>
 
-			<div>
-				<button id="playBtn" disabled>Play</button>
-				<button id="pauseBtn" disabled>Pause</button>
-				<button id="stopBtn" disabled>Stop</button>
+			<div class="control-section">
+				<h3>Playback</h3>
+				<div class="playback-controls">
+					<button id="playBtn" disabled>Play</button>
+					<button id="pauseBtn" disabled>Pause</button>
+					<button id="stopBtn" disabled>Stop</button>
+				</div>
 			</div>
-			<div class="status-text" id="status">Please select a file to start.</div>
+
+			<div class="status-bar" id="status">Loading...</div>
 		</div>
 
-		<div id="statusPanel">
-			<div id="fpsDisplay">FPS: --</div>
-			<div id="modelNameDisplay">Model: None</div>
-			<div id="modelBonesDisplay">Bones: 0</div>
-			<div id="modelMorphsDisplay">Morphs: 0</div>
+		<div id="infoPanel">
+			<h3>Model Info</h3>
+			<div id="infoContent">
+				<div class="info-row"><span class="info-label">Status</span><span class="info-value">No Model</span></div>
+			</div>
 		</div>
 
 		<script type="importmap">
@@ -206,230 +309,226 @@
 			import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
 			import { VRMAnimationLoaderPlugin, createVRMAnimationClip } from '@pixiv/three-vrm-animation';
 
-			// --- DOM elements ---
-			const controlsPanel = document.getElementById('controlsPanel');
-			const toggleControlsBtn = document.getElementById('toggleControlsBtn');
-			const vrmFileInput = document.getElementById('vrmFileInput');
-			const vrmaFileInput = document.getElementById('vrmaFileInput');
-			const vrmaFileLabel = document.getElementById('vrmaFileLabel');
-			const vrmFileNameSpan = document.getElementById('vrmFileName');
-			const vrmaFileNameSpan = document.getElementById('vrmaFileName');
-			const playBtn = document.getElementById('playBtn');
-			const pauseBtn = document.getElementById('pauseBtn');
-			const stopBtn = document.getElementById('stopBtn');
-			const statusDiv = document.getElementById('status');
-			
-			// New Status Panel elements
-			const fpsDisplay = document.getElementById('fpsDisplay');
-			const modelNameDisplay = document.getElementById('modelNameDisplay');
-			const modelBonesDisplay = document.getElementById('modelBonesDisplay');
-			const modelMorphsDisplay = document.getElementById('modelMorphsDisplay');
+			// --- Constants & Config ---
+			const SAMPLES = {
+				vrm: './VRM/sample.vrm',
+				vrma: [
+					'Angry', 'Blush', 'Clapping', 'Goodbye', 'Jump', 
+					'LookAround', 'Relax', 'Sad', 'Sleepy', 'Surprised', 'Thinking'
+				]
+			};
 
-
-			// --- Three.js Setup ---
-			const renderer = new THREE.WebGLRenderer({ antialias: true });
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			renderer.setPixelRatio( window.devicePixelRatio );
-			renderer.outputColorSpace = THREE.SRGBColorSpace; 
-			document.body.appendChild( renderer.domElement );
-
-			const camera = new THREE.PerspectiveCamera( 30.0, window.innerWidth / window.innerHeight, 0.1, 20.0 );
-			camera.position.set( 0.0, 1.0, 5.0 );
-
-			const controls = new OrbitControls( camera, renderer.domElement );
-			controls.screenSpacePanning = true;
-			controls.target.set( 0.0, 1.0, 0.0 );
-			controls.update();
-
-			const scene = new THREE.Scene();
-			scene.background = new THREE.Color(0x222222);
-
-			const light = new THREE.DirectionalLight( 0xffffff, 3.0 );
-			light.position.set( 1.0, 1.0, 1.0 ).normalize();
-			scene.add( light );
-
-			const ambientLight = new THREE.AmbientLight( 0xffffff, 1.0 );
-			scene.add( ambientLight );
-
-			// --- Global Variables for VRM and Animation ---
+			// --- State ---
 			let currentVrm = undefined;
 			let currentMixer = undefined;
 			let currentAction = undefined;
 			let vrmaAnimationClip = undefined;
 
-			// --- FPS Calculation Variables ---
-			let frameCount = 0;
-			let lastTime = performance.now();
-			let fps = 0;
+			// --- DOM Elements ---
+			const controlsPanel = document.getElementById('controlsPanel');
+			const toggleControlsBtn = document.getElementById('toggleControlsBtn');
+			const statusDiv = document.getElementById('status');
+			
+			// VRM Input
+			const vrmFileInput = document.getElementById('vrmFileInput');
+			const vrmFileName = document.getElementById('vrmFileName');
+			
+			// VRMA Input & Samples
+			const vrmaFileInput = document.getElementById('vrmaFileInput');
+			const vrmaFileLabel = document.getElementById('vrmaFileLabel');
+			const vrmaFileName = document.getElementById('vrmaFileName');
+			const sampleAnimationsDiv = document.getElementById('sampleAnimations');
+			
+			// Playback
+			const playBtn = document.getElementById('playBtn');
+			const pauseBtn = document.getElementById('pauseBtn');
+			const stopBtn = document.getElementById('stopBtn');
 
-			// --- GLTF Loader with VRM and VRMA Plugins ---
+			// Info Panel
+			const infoContent = document.getElementById('infoContent');
+
+			// --- Three.js Setup ---
+			const renderer = new THREE.WebGLRenderer({ antialias: true });
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.outputColorSpace = THREE.SRGBColorSpace;
+			document.body.appendChild(renderer.domElement);
+
+			const scene = new THREE.Scene();
+			scene.background = new THREE.Color(0x222222);
+
+			const camera = new THREE.PerspectiveCamera(30.0, window.innerWidth / window.innerHeight, 0.1, 20.0);
+			camera.position.set(0.0, 1.0, 5.0);
+
+			const controls = new OrbitControls(camera, renderer.domElement);
+			controls.screenSpacePanning = true;
+			controls.target.set(0.0, 1.0, 0.0);
+			controls.update();
+
+			const light = new THREE.DirectionalLight(0xffffff, 3.0);
+			light.position.set(1.0, 1.0, 1.0).normalize();
+			scene.add(light);
+			scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+
+			const clock = new THREE.Clock();
+
+			// --- Loaders ---
 			const loader = new GLTFLoader();
 			loader.crossOrigin = 'anonymous';
+			loader.register((parser) => new VRMLoaderPlugin(parser));
+			loader.register((parser) => new VRMAnimationLoaderPlugin(parser));
 
-			loader.register( ( parser ) => new VRMLoaderPlugin( parser ) );
-			loader.register( ( parser ) => new VRMAnimationLoaderPlugin( parser ) );
-			
-			// --- File Loading Functions ---
-			
-			/**
-			 * Loads a VRM model from a File object.
-			 * @param {File} file The VRM File object.
-			 */
-			async function loadVRMFromFile(file) {
-				const url = URL.createObjectURL(file);
+			// --- Initialization ---
+			initSampleButtons();
+			loadVRM(SAMPLES.vrm, 'sample.vrm', true); // Load default model
+
+			// --- Main Loop ---
+			function animate() {
+				requestAnimationFrame(animate);
 				
-				stopAnimation();
-				vrmaAnimationClip = undefined;
-				vrmaFileNameSpan.textContent = 'No file selected';
-				updateModelData(null); // Clear old model data
-				
-				try {
-					statusDiv.textContent = 'Loading VRM model...';
-					
-					await new Promise((resolve, reject) => {
-						loader.load(
-							url,
-							(gltf) => {
-								const vrm = gltf.userData.vrm;
-								
-								VRMUtils.removeUnnecessaryVertices( gltf.scene );
-								VRMUtils.combineSkeletons( gltf.scene );
-								VRMUtils.combineMorphs( vrm );
-
-								vrm.scene.traverse( ( obj ) => {
-									obj.frustumCulled = false;
-								} );
-
-								if (currentVrm) {
-									scene.remove(currentVrm.scene);
-									// FIX: Removed the line currentVrm.dispose() which caused the TypeError.
-								}
-
-								scene.add( vrm.scene );
-								vrm.scene.rotation.y = Math.PI;
-								currentVrm = vrm;
-								
-								currentMixer = new THREE.AnimationMixer( vrm.scene );
-								
-								statusDiv.textContent = `VRM model "${file.name}" loaded successfully!`;
-								vrmFileNameSpan.textContent = file.name;
-								
-								// Update status panel with model info
-								const boneCount = vrm.humanoid?.humanBones?.length || 0;
-								const morphCount = vrm.morpher?.morphTargetDictionary ? Object.keys(vrm.morpher.morphTargetDictionary).length : 0;
-								updateModelData(file.name, boneCount, morphCount);
-								
-								URL.revokeObjectURL(url);
-								resolve(vrm);
-							},
-							(progress) => {
-								const percent = (100.0 * ( progress.loaded / progress.total )).toFixed(1);
-								statusDiv.textContent = `Loading VRM model... ${percent}%`;
-							},
-							(error) => {
-								console.error('Error loading VRM:', error);
-								statusDiv.textContent = 'An error occurred while loading the VRM model: ' + error.message;
-								URL.revokeObjectURL(url);
-								reject(error);
-							}
-						);
-					});
-				} catch (error) {
-					console.error('Error in loadVRMFromFile:', error);
-					statusDiv.textContent = 'An error occurred while loading the VRM model';
-				} finally {
-					updateButtons();
+				const deltaTime = clock.getDelta();
+				if (currentMixer) {
+					currentMixer.update(deltaTime);
 				}
+				if (currentVrm) {
+					currentVrm.update(deltaTime);
+				}
+				
+				renderer.render(scene, camera);
+			}
+			animate();
+
+			// --- Initialization Helpers ---
+			function initSampleButtons() {
+				SAMPLES.vrma.forEach(name => {
+					const btn = document.createElement('button');
+					btn.textContent = name;
+					btn.className = 'sample-vrma-btn';
+					btn.disabled = true; // Disabled until model loads
+					btn.onclick = () => loadVRMA(`./VRMA/${name}.vrma`, `${name}.vrma`);
+					sampleAnimationsDiv.appendChild(btn);
+				});
 			}
 
+			// --- Loading Logic ---
+
 			/**
-			 * Loads a VRMA animation from a File object and converts it to a THREE.AnimationClip.
-			 * @param {File} file The VRMA File object.
+			 * Load VRM from URL or Blob
+			 * @param {string} url 
+			 * @param {string} name Display name
+			 * @param {boolean} isSample Whether we are loading a sample (vs user upload)
 			 */
-			async function loadVRMAFromFile(file) {
-				if (!currentVrm) {
-					statusDiv.textContent = 'VRM model is not loaded. Please load the VRM model first.';
-					return;
-				}
-				
-				const url = URL.createObjectURL(file);
-				
+			async function loadVRM(url, name, isSample = false) {
 				stopAnimation();
+				currentVrm = undefined;
 				vrmaAnimationClip = undefined;
-
-				try {
-					statusDiv.textContent = 'Loading VRMA animation...';
-					
-					await new Promise((resolve, reject) => {
-						loader.load(
-							url,
-							(gltf) => {
-								const vrmAnimationData = gltf.userData.vrmAnimations && gltf.userData.vrmAnimations[0];
-
-								if (vrmAnimationData) {
-									const clip = createVRMAnimationClip(vrmAnimationData, currentVrm);
-									
-									if (clip) {
-										vrmaAnimationClip = clip;
-										statusDiv.textContent = `Animation "${file.name}" loaded successfully!`;
-										vrmaFileNameSpan.textContent = file.name;
-										resolve(clip);
-									} else {
-										throw new Error('Could not create AnimationClip from VRMA data.');
-									}
-								} else {
-									throw new Error('No valid VRMA animation found in the file.');
-								}
-							},
-							(progress) => {
-								const percent = (100.0 * ( progress.loaded / progress.total )).toFixed(1);
-								statusDiv.textContent = `Loading VRMA animation... ${percent}%`;
-							},
-							(error) => {
-								console.error('Error loading animation:', error);
-								statusDiv.textContent = 'An error occurred while loading the animation file: ' + error.message;
-								URL.revokeObjectURL(url);
-								reject(error);
-							}
-						);
-					});
-				} catch (error) {
-					console.error('Error in loadVRMAFromFile:', error);
-					statusDiv.textContent = 'An error occurred while loading the animation file';
-				} finally {
-					updateButtons();
+				statusDiv.textContent = `Loading ${name}...`;
+				
+				// Cleanup previous
+				if (currentMixer) {
+					currentMixer.stopAllAction();
+					currentMixer = undefined;
 				}
-			}
-
-			// --- Animation Control Functions ---
-			
-			function playAnimation() {
-				if (currentVrm && vrmaAnimationClip && currentMixer) {
-					if (currentAction) {
-						currentAction.stop();
-					}
-					
+				
+				// Helper to fetch size if it's a URL
+				let fileSize = 'Unknown';
+				if(isSample) {
 					try {
-						currentAction = currentMixer.clipAction(vrmaAnimationClip);
-						currentAction.setLoop(THREE.LoopRepeat);
-						currentAction.clampWhenFinished = true;
-						currentAction.reset();
-						currentAction.play();
-						
-						statusDiv.textContent = `Playing animation (${vrmaAnimationClip.duration.toFixed(2)}s)`;
-					} catch (error) {
-						console.error('Error playing animation:', error);
-						statusDiv.textContent = 'An error occurred while playing the animation: ' + error.message;
-					}
-				} else {
-					statusDiv.textContent = 'The VRM model and animation must be loaded.';
+						const head = await fetch(url, { method: 'HEAD' });
+						const len = head.headers.get('content-length');
+						if (len) fileSize = formatBytes(parseInt(len));
+					} catch(e) { console.warn('Could not get file size', e); }
 				}
+				
+				try {
+					const gltf = await loader.loadAsync(url, (progress) => {
+						const percent = (100.0 * (progress.loaded / progress.total)).toFixed(1);
+						const msg = isFinite(percent) ? `${percent}%` : '...';
+						statusDiv.textContent = `Loading Model: ${msg}`;
+					});
+					
+					const vrm = gltf.userData.vrm;
+					VRMUtils.removeUnnecessaryVertices(gltf.scene);
+					VRMUtils.combineSkeletons(gltf.scene);
+					VRMUtils.combineMorphs(vrm);
+					
+					// Cleanup scene - remove old VRM root
+					const oldRoot = scene.getObjectByName('VRM_ROOT');
+					if (oldRoot) {
+						scene.remove(oldRoot);
+					}
+					vrm.scene.name = 'VRM_ROOT'; // Tag for easy removal
+
+					vrm.scene.traverse((obj) => { obj.frustumCulled = false; });
+					vrm.scene.rotation.y = Math.PI;
+
+					scene.add(vrm.scene);
+					currentVrm = vrm;
+					currentMixer = new THREE.AnimationMixer(vrm.scene);
+
+					vrmFileName.textContent = name;
+					statusDiv.textContent = 'Model Loaded';
+					
+					// Update UI
+					updateButtons();
+					
+					// Calculate Stats
+					updateInfoPanel(vrm, gltf, fileSize);
+					
+					console.log("Model loaded", vrm);
+
+				} catch (err) {
+					console.error(err);
+					statusDiv.textContent = 'Error loading model';
+				}
+			}
+
+			/**
+			 * Load VRMA from URL
+			 */
+			async function loadVRMA(url, name) {
+				if (!currentVrm) return;
+				
+				statusDiv.textContent = `Loading Animation ${name}...`;
+				
+				try {
+					const gltf = await loader.loadAsync(url);
+					const vrmAnimations = gltf.userData.vrmAnimations;
+					
+					if (vrmAnimations && vrmAnimations.length > 0) {
+						vrmaAnimationClip = createVRMAnimationClip(vrmAnimations[0], currentVrm);
+						vrmaFileName.textContent = name;
+						statusDiv.textContent = 'Animation Loaded';
+						playAnimation();
+						updateButtons();
+					} else {
+						throw new Error("No VRMA animations found");
+					}
+
+				} catch (err) {
+					console.error(err);
+					statusDiv.textContent = 'Error loading animation';
+				}
+			}
+
+			// --- Animation Controls ---
+			function playAnimation() {
+				if (!currentVrm || !vrmaAnimationClip || !currentMixer) return;
+				
+				if (currentAction) currentAction.stop();
+				
+				currentAction = currentMixer.clipAction(vrmaAnimationClip);
+				currentAction.setLoop(THREE.LoopRepeat);
+				currentAction.play();
+				
+				statusDiv.textContent = 'Playing';
+				updateButtons();
 			}
 
 			function pauseAnimation() {
 				if (currentAction) {
 					currentAction.paused = !currentAction.paused;
-					statusDiv.textContent = currentAction.paused ? 'Animation paused' : 'Playing animation...';
+					statusDiv.textContent = currentAction.paused ? 'Paused' : 'Playing';
 				}
 			}
 
@@ -437,120 +536,182 @@
 				if (currentAction) {
 					currentAction.stop();
 					currentAction = undefined;
-					currentMixer?.stopAllAction();
-					currentVrm?.humanoid.resetPose();
-					statusDiv.textContent = 'Animation stopped.';
+					statusDiv.textContent = 'Stopped';
 				}
+				if (currentVrm) {
+					currentVrm.humanoid.resetPose();
+				}
+				updateButtons();
 			}
 
-			// --- UI and Status Handlers ---
-			
-			/** Updates the state of the control buttons. */
+			// --- UI Updates ---
 			function updateButtons() {
-				const hasVrm = currentVrm !== undefined;
-				const hasVrma = vrmaAnimationClip !== undefined;
+				const hasModel = !!currentVrm;
+				const hasAnim = !!vrmaAnimationClip;
 				
-				vrmaFileInput.disabled = !hasVrm;
-				vrmaFileLabel.style.opacity = hasVrm ? 1 : 0.5;
-
-				playBtn.disabled = !(hasVrm && hasVrma);
-				pauseBtn.disabled = !(hasVrm && hasVrma);
-				stopBtn.disabled = !(hasVrm && hasVrma);
+				// Enable/Disable inputs
+				vrmaFileInput.disabled = !hasModel;
+				
+				// Enable/Disable Sample buttons
+				document.querySelectorAll('.sample-vrma-btn').forEach(b => {
+					b.disabled = !hasModel;
+				});
+				
+				// Playback
+				playBtn.disabled = !hasAnim;
+				pauseBtn.disabled = !hasAnim;
+				stopBtn.disabled = !hasAnim;
 			}
 
-			/** Updates the new status panel with model data. */
-			function updateModelData(name, bones = 0, morphs = 0) {
-				if (name) {
-					modelNameDisplay.textContent = `Model: ${name.length > 20 ? name.substring(0, 17) + '...' : name}`;
-					modelBonesDisplay.textContent = `Bones: ${bones}`;
-					modelMorphsDisplay.textContent = `Morphs: ${morphs}`;
-				} else {
-					modelNameDisplay.textContent = `Model: None`;
-					modelBonesDisplay.textContent = `Bones: 0`;
-					modelMorphsDisplay.textContent = `Morphs: 0`;
+			function updateInfoPanel(vrm, gltf, initialFileSize) {
+				const meta = vrm.meta || {};
+				const stats = {
+					'VRM Version': vrm.meta.metaVersion || 'Unknown',
+					'File Size': initialFileSize,
+					'Title': meta.title || 'Untitled',
+					'Author': meta.author || 'Unknown',
+					'Meshes': 0,
+					'Polygons': 0,
+					'Materials': 0,
+					'Textures': 0,
+					'Bones': vrm.humanoid?.humanBones ? Object.keys(vrm.humanoid.humanBones).length : 0,
+					'Blendshapes': vrm.expressionManager?.expressionMap ? Object.keys(vrm.expressionManager.expressionMap).length : 0
+				};
+
+				// Calculate Geometry Stats
+				const uniqueMats = new Set();
+				
+				vrm.scene.traverse((obj) => {
+					if (obj.isMesh) {
+						stats['Meshes']++;
+						if (obj.geometry) {
+							// Simple index count / 3 or count / 3
+							const geom = obj.geometry;
+							if (geom.index) {
+								stats['Polygons'] += geom.index.count / 3;
+							} else if (geom.attributes.position) {
+								stats['Polygons'] += geom.attributes.position.count / 3;
+							}
+						}
+						if (obj.material) {
+							if (Array.isArray(obj.material)) {
+								obj.material.forEach(m => uniqueMats.add(m.uuid));
+							} else {
+								uniqueMats.add(obj.material.uuid);
+							}
+						}
+					}
+				});
+				
+				stats['Materials'] = uniqueMats.size;
+				stats['Textures'] = gltf.parser ? (gltf.parser.json.textures?.length || 0) : 'N/A';
+				stats['Polygons'] = Math.round(stats['Polygons']).toLocaleString();
+
+				// Build HTML
+				let html = '';
+				for (const [key, val] of Object.entries(stats)) {
+					html += `<div class="info-row"><span class="info-label">${key}</span><span class="info-value">${val}</span></div>`;
 				}
+				infoContent.innerHTML = html;
 			}
 			
-			/** Toggles the visibility of the main controls panel. */
-			function toggleControlsPanel() {
-				const isHidden = controlsPanel.classList.toggle('hidden');
-				toggleControlsBtn.textContent = isHidden ? 'Show Menu' : 'Hide Menu';
-				toggleControlsBtn.classList.toggle('controls-visible', !isHidden);
+			function formatBytes(bytes, decimals = 2) {
+				if (!+bytes) return '0 Bytes';
+				const k = 1024;
+				const dm = decimals < 0 ? 0 : decimals;
+				const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+				const i = Math.floor(Math.log(bytes) / Math.log(k));
+				return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 			}
 
 			// --- Event Listeners ---
 			
-			toggleControlsBtn.addEventListener('click', toggleControlsPanel);
+			// Toggle Menu
+			toggleControlsBtn.addEventListener('click', () => {
+				const isHidden = controlsPanel.classList.toggle('hidden');
+				toggleControlsBtn.classList.toggle('open', !isHidden);
+				toggleControlsBtn.innerHTML = isHidden ? '&gt;' : '&lt;';
+			});
 
-			vrmFileInput.addEventListener('change', async (event) => {
-				const file = event.target.files[0];
-				if (file) {
-					await loadVRMFromFile(file);
-					vrmaFileInput.value = '';
-					updateButtons();
-				}
+			// File Inputs
+			vrmFileInput.addEventListener('change', (e) => {
+				const file = e.target.files[0];
+				if (!file) return;
+				
+				const url = URL.createObjectURL(file);
+				loadVRM(url, file.name, false).then(() => {
+					const fileSize = formatBytes(file.size);
+					const row = Array.from(infoContent.querySelectorAll('.info-row')).find(r => r.textContent.includes('File Size'));
+					if (row) row.querySelector('.info-value').textContent = fileSize;
+				});
+			});
+
+			vrmaFileInput.addEventListener('change', (e) => {
+				const file = e.target.files[0];
+				if (!file) return;
+				
+				const url = URL.createObjectURL(file);
+				loadVRMA(url, file.name);
+			});
+
+			// Drag and Drop
+			const dragOverlay = document.getElementById('dragOverlay');
+			
+			window.addEventListener('dragover', (e) => {
+				e.preventDefault();
+				dragOverlay.classList.add('active');
 			});
 			
-			vrmaFileInput.addEventListener('change', async (event) => {
-				const file = event.target.files[0];
-				if (file) {
-					await loadVRMAFromFile(file);
-					updateButtons();
+			dragOverlay.addEventListener('dragleave', (e) => {
+				e.preventDefault();
+				dragOverlay.classList.remove('active');
+			});
+			
+			window.addEventListener('drop', (e) => {
+				e.preventDefault();
+				dragOverlay.classList.remove('active');
+				
+				if (e.dataTransfer.items) {
+					[...e.dataTransfer.items].forEach((item, i) => {
+						if (item.kind === 'file') {
+							const file = item.getAsFile();
+							handleDroppedFile(file);
+						}
+					});
+				} else {
+					[...e.dataTransfer.files].forEach((file, i) => {
+						handleDroppedFile(file);
+					});
 				}
 			});
 
-			playBtn.addEventListener('click', playAnimation);
-			pauseBtn.addEventListener('click', pauseAnimation);
-			stopBtn.addEventListener('click', stopAnimation);
+			function handleDroppedFile(file) {
+				const ext = file.name.split('.').pop().toLowerCase();
+				const url = URL.createObjectURL(file);
+				
+				if (ext === 'vrm') {
+					loadVRM(url, file.name, false).then(() => {
+						const fileSize = formatBytes(file.size);
+						const row = Array.from(infoContent.querySelectorAll('.info-row')).find(r => r.textContent.includes('File Size'));
+						if (row) row.querySelector('.info-value').textContent = fileSize;
+					});
+				} else if (ext === 'vrma') {
+					loadVRMA(url, file.name);
+				} else {
+					statusDiv.textContent = `Ignored ${file.name} (unknown type)`;
+				}
+			}
 
+			// Playback
+			playBtn.onclick = playAnimation;
+			pauseBtn.onclick = pauseAnimation;
+			stopBtn.onclick = stopAnimation;
+
+			// Window Resize
 			window.addEventListener('resize', () => {
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
 				renderer.setSize(window.innerWidth, window.innerHeight);
-			});
-
-			// --- Helpers ---
-			const gridHelper = new THREE.GridHelper( 10, 10 );
-			scene.add( gridHelper );
-
-			const axesHelper = new THREE.AxesHelper( 5 );
-			scene.add( axesHelper );
-
-			// --- Animation Loop ---
-			const clock = new THREE.Clock();
-
-			function animate() {
-				requestAnimationFrame( animate );
-
-				const deltaTime = clock.getDelta();
-
-				// FPS calculation
-				frameCount++;
-				const currentTime = performance.now();
-				if (currentTime > lastTime + 1000) { // Update FPS every second
-					fps = (frameCount * 1000) / (currentTime - lastTime);
-					fpsDisplay.textContent = `FPS: ${fps.toFixed(1)}`;
-					lastTime = currentTime;
-					frameCount = 0;
-				}
-
-				if ( currentVrm ) {
-					currentVrm.update( deltaTime );
-				}
-				if ( currentMixer ) {
-					currentMixer.update( deltaTime );
-				}
-
-				controls.update();
-				renderer.render( scene, camera );
-			}
-
-			animate();
-
-			// Initial setup
-			window.addEventListener('DOMContentLoaded', () => {
-				updateButtons();
-				updateModelData(null); // Initialize status panel
 			});
 		</script>
 	</body>
