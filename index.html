@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
 		<meta charset="utf-8" />
 		<title>three-vrm with VRMA animation</title>
 		<meta
 			name="viewport"
-			content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+			content="width=device-width, initial-scale=1.0"
 		/>
 		<style>
 			body {
@@ -107,6 +107,12 @@
 				word-break: break-all;
 			}
 
+			.sample-animations-label {
+				margin-top: 8px;
+				font-size: 11px;
+				color: #aaa;
+			}
+
 			.vrma-grid {
 				display: grid;
 				grid-template-columns: repeat(3, 1fr);
@@ -184,8 +190,13 @@
 				font-size: 13px;
 				font-family: monospace;
 				box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-				pointer-events: none; /* Let drag drop pass through empty areas if needed, but usually we want to click */
 				pointer-events: auto;
+				transition: transform 0.3s ease, opacity 0.3s ease;
+			}
+			#infoPanel.hidden {
+				transform: translateX(120%);
+				opacity: 0;
+				pointer-events: none;
 			}
 			#infoPanel h3 {
 				margin-top: 0;
@@ -227,6 +238,7 @@
 				pointer-events: none;
 				opacity: 0;
 				transition: opacity 0.2s;
+				-webkit-backdrop-filter: blur(5px);
 				backdrop-filter: blur(5px);
 			}
 			#dragOverlay.active {
@@ -239,6 +251,31 @@
 				color: #aaa;
 				text-align: center;
 				font-style: italic;
+			}
+			.features-group {
+				display: flex;
+				flex-direction: column;
+				gap: 5px;
+			}
+			.feature-label {
+				font-size: 11px;
+			}
+			.feature-checkbox-label {
+				font-size: 11px;
+				display: flex;
+				align-items: center;
+				gap: 5px;
+			}
+			.mt-5 {
+				margin-top: 5px;
+			}
+			.btn-group-wrap {
+				display: flex;
+				gap: 5px;
+				flex-wrap: wrap;
+			}
+			.mb-5 {
+				margin-bottom: 5px;
 			}
 		</style>
 	</head>
@@ -266,9 +303,46 @@
 				</div>
 				<div id="vrmaFileName" class="file-name">No animation selected</div>
 				
-				<div style="margin-top: 8px; font-size: 11px; color: #aaa;">Sample Animations:</div>
+				<div class="sample-animations-label">Sample Animations:</div>
 				<div class="vrma-grid" id="sampleAnimations">
 					<!-- Buttons injected by JS -->
+				</div>
+			</div>
+
+			<div class="control-section">
+				<h3>Features</h3>
+				<div class="features-group">
+					<label for="dirLightSlider" class="feature-label">Directional Light: <span id="dirLightVal">3.0</span></label>
+					<input type="range" id="dirLightSlider" min="0" max="10" step="0.1" value="3.0">
+					<label for="ambLightSlider" class="feature-label">Ambient Light: <span id="ambLightVal">1.0</span></label>
+					<input type="range" id="ambLightSlider" min="0" max="5" step="0.1" value="1.0">
+					
+					<label for="standbyToggle" class="feature-checkbox-label mt-5">
+						<input type="checkbox" id="standbyToggle" checked> Standby Motion
+					</label>
+					<label for="eyeFollowToggle" class="feature-checkbox-label">
+						<input type="checkbox" id="eyeFollowToggle" checked> Eye Following
+					</label>
+					<label for="blinkToggle" class="feature-checkbox-label">
+						<input type="checkbox" id="blinkToggle" checked> Auto Blinking
+					</label>
+				</div>
+			</div>
+
+			<div class="control-section">
+				<h3>Poses & Emotions</h3>
+				<div class="btn-group-wrap mb-5">
+					<button id="poseDefault">Default</button>
+					<button id="poseCrossed">Crossed Arms</button>
+					<button id="poseHips">Hands on Hips</button>
+				</div>
+				<div class="btn-group-wrap" id="emotionButtons">
+					<button class="emotion-btn" data-expr="neutral">Neutral</button>
+					<button class="emotion-btn" data-expr="happy">Happy</button>
+					<button class="emotion-btn" data-expr="angry">Angry</button>
+					<button class="emotion-btn" data-expr="sad">Sad</button>
+					<button class="emotion-btn" data-expr="relaxed">Relaxed</button>
+					<button class="emotion-btn" data-expr="surprised">Surprised</button>
 				</div>
 			</div>
 
@@ -324,9 +398,17 @@
 			let currentAction = undefined;
 			let vrmaAnimationClip = undefined;
 
+			let blinkTimeout = 2.0;
+			let isBlinking = false;
+			let blinkProgress = 0;
+
+			let mouseX = 0;
+			let mouseY = 0;
+
 			// --- DOM Elements ---
 			const controlsPanel = document.getElementById('controlsPanel');
 			const toggleControlsBtn = document.getElementById('toggleControlsBtn');
+			const infoPanel = document.getElementById('infoPanel');
 			const statusDiv = document.getElementById('status');
 			
 			// VRM Input
@@ -339,6 +421,15 @@
 			const vrmaFileName = document.getElementById('vrmaFileName');
 			const sampleAnimationsDiv = document.getElementById('sampleAnimations');
 			
+			// Features
+			const dirLightSlider = document.getElementById('dirLightSlider');
+			const ambLightSlider = document.getElementById('ambLightSlider');
+			const dirLightVal = document.getElementById('dirLightVal');
+			const ambLightVal = document.getElementById('ambLightVal');
+			const standbyToggle = document.getElementById('standbyToggle');
+			const eyeFollowToggle = document.getElementById('eyeFollowToggle');
+			const blinkToggle = document.getElementById('blinkToggle');
+
 			// Playback
 			const playBtn = document.getElementById('playBtn');
 			const pauseBtn = document.getElementById('pauseBtn');
@@ -368,7 +459,12 @@
 			const light = new THREE.DirectionalLight(0xffffff, 3.0);
 			light.position.set(1.0, 1.0, 1.0).normalize();
 			scene.add(light);
-			scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+			
+			const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+			scene.add(ambientLight);
+
+			const lookAtTarget = new THREE.Object3D();
+			scene.add(lookAtTarget);
 
 			const clock = new THREE.Clock();
 
@@ -387,10 +483,59 @@
 				requestAnimationFrame(animate);
 				
 				const deltaTime = clock.getDelta();
+				
 				if (currentMixer) {
 					currentMixer.update(deltaTime);
 				}
+
 				if (currentVrm) {
+					// Standby Motion
+					if (standbyToggle.checked && (!currentAction || !currentAction.isRunning())) {
+						const time = clock.getElapsedTime();
+						const spine = currentVrm.humanoid.getNormalizedBoneNode('spine');
+						const neck = currentVrm.humanoid.getNormalizedBoneNode('neck');
+						if (spine && neck) {
+							spine.rotation.x = Math.sin(time) * 0.02;
+							spine.rotation.y = Math.cos(time * 0.8) * 0.01;
+							neck.rotation.x = Math.sin(time * 1.2) * 0.01;
+						}
+					}
+					
+					// Eye Follow
+					if (eyeFollowToggle.checked) {
+						const vector = new THREE.Vector3(mouseX, mouseY, 0.5);
+						vector.unproject(camera);
+						const dir = vector.sub(camera.position).normalize();
+						const distance = 2.0;
+						lookAtTarget.position.copy(camera.position).add(dir.multiplyScalar(distance));
+					} else {
+						lookAtTarget.position.set(0, 1.5, 2); 
+					}
+					
+					// Auto Blink
+					if (currentVrm.expressionManager) {
+						if (blinkToggle.checked) {
+							if (!isBlinking) {
+								blinkTimeout -= deltaTime;
+								if (blinkTimeout <= 0) {
+									isBlinking = true;
+									blinkProgress = 0;
+								}
+							} else {
+								blinkProgress += deltaTime * 10;
+								if (blinkProgress > Math.PI) {
+									isBlinking = false;
+									blinkTimeout = Math.random() * 3 + 2;
+									currentVrm.expressionManager.setValue('blink', 0);
+								} else {
+									currentVrm.expressionManager.setValue('blink', Math.sin(blinkProgress));
+								}
+							}
+						} else {
+							currentVrm.expressionManager.setValue('blink', 0);
+						}
+					}
+
 					currentVrm.update(deltaTime);
 				}
 				
@@ -412,12 +557,6 @@
 
 			// --- Loading Logic ---
 
-			/**
-			 * Load VRM from URL or Blob
-			 * @param {string} url 
-			 * @param {string} name Display name
-			 * @param {boolean} isSample Whether we are loading a sample (vs user upload)
-			 */
 			async function loadVRM(url, name, isSample = false) {
 				stopAnimation();
 				currentVrm = undefined;
@@ -430,7 +569,6 @@
 					currentMixer = undefined;
 				}
 				
-				// Helper to fetch size if it's a URL
 				let fileSize = 'Unknown';
 				if(isSample) {
 					try {
@@ -461,6 +599,10 @@
 
 					vrm.scene.traverse((obj) => { obj.frustumCulled = false; });
 					vrm.scene.rotation.y = Math.PI;
+					
+					if (vrm.lookAt) {
+						vrm.lookAt.target = lookAtTarget;
+					}
 
 					scene.add(vrm.scene);
 					currentVrm = vrm;
@@ -469,12 +611,8 @@
 					vrmFileName.textContent = name;
 					statusDiv.textContent = 'Model Loaded';
 					
-					// Update UI
 					updateButtons();
-					
-					// Calculate Stats
 					updateInfoPanel(vrm, gltf, fileSize);
-					
 					console.log("Model loaded", vrm);
 
 				} catch (err) {
@@ -483,9 +621,6 @@
 				}
 			}
 
-			/**
-			 * Load VRMA from URL
-			 */
 			async function loadVRMA(url, name) {
 				if (!currentVrm) return;
 				
@@ -549,15 +684,12 @@
 				const hasModel = !!currentVrm;
 				const hasAnim = !!vrmaAnimationClip;
 				
-				// Enable/Disable inputs
 				vrmaFileInput.disabled = !hasModel;
 				
-				// Enable/Disable Sample buttons
 				document.querySelectorAll('.sample-vrma-btn').forEach(b => {
 					b.disabled = !hasModel;
 				});
 				
-				// Playback
 				playBtn.disabled = !hasAnim;
 				pauseBtn.disabled = !hasAnim;
 				stopBtn.disabled = !hasAnim;
@@ -578,14 +710,12 @@
 					'Blendshapes': vrm.expressionManager?.expressionMap ? Object.keys(vrm.expressionManager.expressionMap).length : 0
 				};
 
-				// Calculate Geometry Stats
 				const uniqueMats = new Set();
 				
 				vrm.scene.traverse((obj) => {
 					if (obj.isMesh) {
 						stats['Meshes']++;
 						if (obj.geometry) {
-							// Simple index count / 3 or count / 3
 							const geom = obj.geometry;
 							if (geom.index) {
 								stats['Polygons'] += geom.index.count / 3;
@@ -607,7 +737,6 @@
 				stats['Textures'] = gltf.parser ? (gltf.parser.json.textures?.length || 0) : 'N/A';
 				stats['Polygons'] = Math.round(stats['Polygons']).toLocaleString();
 
-				// Build HTML
 				let html = '';
 				for (const [key, val] of Object.entries(stats)) {
 					html += `<div class="info-row"><span class="info-label">${key}</span><span class="info-value">${val}</span></div>`;
@@ -626,11 +755,90 @@
 
 			// --- Event Listeners ---
 			
+			// Window / Mouse
+			window.addEventListener('mousemove', (e) => {
+				mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+				mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+			});
+
+			window.addEventListener('resize', () => {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+			});
+
 			// Toggle Menu
 			toggleControlsBtn.addEventListener('click', () => {
 				const isHidden = controlsPanel.classList.toggle('hidden');
+				infoPanel.classList.toggle('hidden', isHidden);
 				toggleControlsBtn.classList.toggle('open', !isHidden);
 				toggleControlsBtn.innerHTML = isHidden ? '&gt;' : '&lt;';
+			});
+
+			// Lighting Features
+			dirLightSlider.addEventListener('input', (e) => {
+				light.intensity = parseFloat(e.target.value);
+				dirLightVal.textContent = e.target.value;
+			});
+
+			ambLightSlider.addEventListener('input', (e) => {
+				ambientLight.intensity = parseFloat(e.target.value);
+				ambLightVal.textContent = e.target.value;
+			});
+
+			// Poses & Emotions
+			function resetPose() {
+				if (currentVrm) currentVrm.humanoid.resetPose();
+			}
+
+			document.getElementById('poseDefault').addEventListener('click', resetPose);
+
+			document.getElementById('poseCrossed').addEventListener('click', () => {
+				resetPose();
+				if (currentVrm) {
+					const h = currentVrm.humanoid;
+					if (h.getNormalizedBoneNode('leftUpperArm')) {
+						h.getNormalizedBoneNode('leftUpperArm').rotation.z = 1.0;
+						h.getNormalizedBoneNode('leftUpperArm').rotation.x = 0.2;
+						h.getNormalizedBoneNode('leftLowerArm').rotation.z = 1.5;
+						h.getNormalizedBoneNode('leftLowerArm').rotation.y = -0.5;
+						
+						h.getNormalizedBoneNode('rightUpperArm').rotation.z = -1.0;
+						h.getNormalizedBoneNode('rightUpperArm').rotation.x = 0.2;
+						h.getNormalizedBoneNode('rightLowerArm').rotation.z = -1.5;
+						h.getNormalizedBoneNode('rightLowerArm').rotation.y = 0.5;
+					}
+				}
+			});
+
+			document.getElementById('poseHips').addEventListener('click', () => {
+				resetPose();
+				if (currentVrm) {
+					const h = currentVrm.humanoid;
+					if (h.getNormalizedBoneNode('leftUpperArm')) {
+						h.getNormalizedBoneNode('leftUpperArm').rotation.z = 0.5;
+						h.getNormalizedBoneNode('leftUpperArm').rotation.x = 0.2;
+						h.getNormalizedBoneNode('leftLowerArm').rotation.x = -1.0;
+						h.getNormalizedBoneNode('leftLowerArm').rotation.y = -0.5;
+						
+						h.getNormalizedBoneNode('rightUpperArm').rotation.z = -0.5;
+						h.getNormalizedBoneNode('rightUpperArm').rotation.x = 0.2;
+						h.getNormalizedBoneNode('rightLowerArm').rotation.x = -1.0;
+						h.getNormalizedBoneNode('rightLowerArm').rotation.y = 0.5;
+					}
+				}
+			});
+
+			const expressions = ['neutral', 'happy', 'angry', 'sad', 'relaxed', 'surprised'];
+			document.querySelectorAll('.emotion-btn').forEach(btn => {
+				btn.addEventListener('click', (e) => {
+					if (!currentVrm || !currentVrm.expressionManager) return;
+					const expr = e.target.dataset.expr;
+					expressions.forEach(name => currentVrm.expressionManager.setValue(name, 0));
+					if (expr !== 'neutral') {
+						currentVrm.expressionManager.setValue(expr, 1.0);
+					}
+				});
 			});
 
 			// File Inputs
@@ -702,17 +910,11 @@
 				}
 			}
 
-			// Playback
+			// Playback Controls
 			playBtn.onclick = playAnimation;
 			pauseBtn.onclick = pauseAnimation;
 			stopBtn.onclick = stopAnimation;
 
-			// Window Resize
-			window.addEventListener('resize', () => {
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-				renderer.setSize(window.innerWidth, window.innerHeight);
-			});
 		</script>
 	</body>
 </html>

@@ -1,7 +1,0 @@
-fix light (model blured by white, recommend light control)
-eye following
-automatic blinking
-stanby motion (same as human)
-pose system
-emotion and face blendshape control
-have a button to hide all windows

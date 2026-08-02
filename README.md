@@ -36,7 +36,7 @@ Open `index.html` in a web browser to see the demo. The viewer includes:
 
 ## Project Structure
 
-```
+```text
 vrm_viewer/
 ├── index.html              # Main viewer application
 ├── VRM/
@@ -74,6 +74,7 @@ vrm_viewer/
 
 1. **Clone or download** this repository
 2. **Start a local web server** (required for loading files):
+
    ```bash
    # Using Python
    python -m http.server 8000
@@ -84,6 +85,7 @@ vrm_viewer/
    # Using PHP
    php -S localhost:8000
    ```
+
 3. **Open your browser** and navigate to `http://localhost:8000`
 4. **Load the VRM model** (automatically loads on page load)
 5. **Select animations** using the VRMA buttons or upload your own files
