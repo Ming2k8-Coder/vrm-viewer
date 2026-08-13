@@ -20,6 +20,11 @@ export function initLight() {
 	lightPosZRange.addEventListener('input', (e) => { if (state.light) { state.light.position.z = parseFloat(e.target.value); showLightMarker(); } });
 	// intensity/gama/brightness
 	lightIntensityRange.addEventListener('input', (e) => { if (state.light) { state.light.intensity = parseFloat(e.target.value); showLightMarker(); } });
+	document.getElementById('ambLightSlider')?.addEventListener('input', (e) => {
+		if (state.ambientLight) {
+			state.ambientLight.intensity = parseFloat(e.target.value);
+		}
+	});
 	// color
 	lightColorBtn.addEventListener('input', (e) => { if (state.light) { state.light.color = new THREE.Color(e.target.value); showLightMarker(); } });
 	setLightAsBgAvgBtn.addEventListener('click', (e) => {

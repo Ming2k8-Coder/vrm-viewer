@@ -66,7 +66,8 @@ function showCapturedImageDialog(imageDataURL, { transparent = false } = {}) {
 
 // Wires up the photo button.
 export function initPhoto() {
-	photoBtn.addEventListener('click', () => {
-		captureCanvasImage({ transparent: false })
+	photoBtn?.addEventListener('click', () => {
+		const transparent = document.getElementById('photoTransparentToggle')?.checked ?? false;
+		captureCanvasImage({ transparent });
 	});
 }

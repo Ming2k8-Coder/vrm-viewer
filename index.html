@@ -85,8 +85,22 @@
 					<select name="animation-select" id="animation-select"></select>
 				</div>
 				<div class="setting bottom top switch-wrapper">
+					<span class="switch-text">Pose Stance</span>
+					<select id="poseModeSelect" style="font-size:12px;padding:4px 8px;border-radius:6px;background:var(--field-color);color:var(--text-color);border:1px solid var(--border-dark-color);">
+						<option value="dynamicA">Dynamic A-Pose</option>
+						<option value="rigidT">Rigid T-Pose</option>
+					</select>
+				</div>
+				<div class="setting bottom top switch-wrapper">
 					<span class="switch-text" data-locale="app.sidebar.model-tab.body.reset-pose">Reset pose</span>
-					<button class='text-button' id="stop-btn" disabled data-locale="app.sidebar.model-tab.body.reset-pose.reset">Reset</button>
+					<button class='text-button' id="stop-btn" disabled data-locale="app.sidebar.model-tab.body.reset-pose.reset" style="width:auto;">Reset</button>
+				</div>
+				<div class="setting top bottom switch-wrapper">
+					<span class="switch-text">3D Handles</span>
+					<label class="switch">
+						<input type="checkbox" id="handlesToggle" checked />
+						<span class="slider"></span>
+					</label>
 				</div>
 			</details>
 			<details open><summary data-locale="app.sidebar.model-tab.face">Face</summary>
@@ -107,7 +121,7 @@
 				<div class="setting switch-wrapper">
 					<span class="switch-text" data-locale="app.sidebar.model-tab.face.blink">Blink</span>
 					<label class="switch">
-						<input type="checkbox" id="blink-chk" />
+						<input type="checkbox" id="blink-chk" checked />
 						<span class="slider"></span>
 					</label>
 				</div>
@@ -119,22 +133,19 @@
 				</div>
 				<div class="setting top bottom switch-wrapper">
 					<span class="switch-text" data-locale="app.sidebar.model-tab.face.recenter-eyes">Recenter eyes</span>
-					<button class='text-button' id="reset-look-btn" data-locale="app.sidebar.model-tab.face.recenter-eyes.recenter">Recenter</button>
+					<button class='text-button' id="reset-look-btn" data-locale="app.sidebar.model-tab.face.recenter-eyes.recenter" style="width:auto;">Recenter</button>
 				</div>
-				<div id="blend-shape-ranges">
-
-				</div>
+				<div id="blend-shape-ranges"></div>
 				<div class="setting top bottom switch-wrapper">
 					<span class="switch-text" data-locale="app.sidebar.model-tab.face.clear-expressions">Clear all expressions</span>
-					<button class='text-button' id="reset-expression-btn" data-locale="app.sidebar.model-tab.face.clear-expressions.reset">Reset</button>
+					<button class='text-button' id="reset-expression-btn" data-locale="app.sidebar.model-tab.face.clear-expressions.reset" style="width:auto;">Reset</button>
 				</div>
 			</details>
 			<details open><summary data-locale="app.sidebar.model-tab.materials">Materials</summary>
-				<div id="materials-list">
-					
-				</div>
+				<div id="materials-list"></div>
 			</details>
 		</div>
+
 		<!-- 
 			MARK: Sidebar scene tab
 		-->
@@ -156,19 +167,24 @@
 					<span class="switch-text" data-locale="app.sidebar.scene-tab.light.brightness">Brightness</span>
 					<input type="range" id="light-intensity" min="0" max="6" step="0.5" value="3">
 				</div>
+				<div class="setting switch-wrapper">
+					<span class="switch-text">Ambient Light</span>
+					<input type="range" id="ambLightSlider" min="0" max="5" step="0.1" value="1.0">
+				</div>
 				<div class="setting bottom switch-wrapper">
 					<span class="switch-text" data-locale="app.sidebar.scene-tab.light.color">Color</span>
 					<input type="color" id="light-color" value="#ffffff">
 				</div>
 				<div class="setting bottom top switch-wrapper">
 					<span class="switch-text" data-locale="app.sidebar.scene-tab.light.reset-light">Reset light</span>
-					<button class='text-button' id="reset-light-btn" data-locale="app.sidebar.scene-tab.light.reset-light.reset">Reset</button>
+					<button class='text-button' id="reset-light-btn" data-locale="app.sidebar.scene-tab.light.reset-light.reset" style="width:auto;">Reset</button>
 				</div>
 			</details>
+
 			<details open><summary data-locale="app.sidebar.scene-tab.background">Background</summary>
 				<div class="setting bottom top switch-wrapper">
 					<span class="switch-text" data-locale="app.sidebar.scene-tab.background.color">Color</span>
-					<input type="color" id="background-color" value="#222222">
+					<input type="color" id="background-color" value="#ffffff">
 				</div>
 				<div class="setting top">
 					<div id="skybox-buttons">
@@ -185,11 +201,32 @@
 				</div>
 				<div class="setting top bottom switch-wrapper">
 					<span class="switch-text" data-locale="app.sidebar.scene-tab.background.light-color-as-background-average">Light color as background average</span>
-					<button class='text-button' id="setLightAsBgAvgBtn" data-locale="app.sidebar.scene-tab.background.light-color-as-background-average.set-color">Set Color</button>
+					<button class='text-button' id="setLightAsBgAvgBtn" data-locale="app.sidebar.scene-tab.background.light-color-as-background-average.set-color" style="width:auto;">Set Color</button>
 				</div>
 			</details>
-			
+
+			<details open><summary>Procedural Motion</summary>
+				<div class="setting top switch-wrapper">
+					<span class="switch-text">Standing Sway & Breath</span>
+					<label class="switch">
+						<input type="checkbox" id="proceduralIdleToggle" checked />
+						<span class="slider"></span>
+					</label>
+				</div>
+				<div class="setting switch-wrapper">
+					<span class="switch-text">Motion Intensity</span>
+					<input type="range" id="proceduralIntensitySlider" min="0" max="2" step="0.1" value="1.0">
+				</div>
+				<div class="setting bottom switch-wrapper">
+					<span class="switch-text">Micro Eye Saccades</span>
+					<label class="switch">
+						<input type="checkbox" id="eyeSaccadesToggle" checked />
+						<span class="slider"></span>
+					</label>
+				</div>
+			</details>
 		</div>
+
 		<!-- 
 			MARK: Sidebar render tab
 		-->
@@ -199,15 +236,23 @@
 					<span class="switch-text" data-locale="app.sidebar.render-tab.camera.fov">Field of view</span>
 					<input type="range" id="fov-range" min="5" max="120" step="5" value="30">
 				</div>
+				<div class="setting switch-wrapper">
+					<span class="switch-text">Camera Framing</span>
+					<div style="display:flex;gap:4px;">
+						<button class="text-button" id="camHeadBtn" style="padding:4px 8px;font-size:11px;width:auto;">Head</button>
+						<button class="text-button" id="camUpperBtn" style="padding:4px 8px;font-size:11px;width:auto;">Upper</button>
+						<button class="text-button" id="camFullBtn" style="padding:4px 8px;font-size:11px;width:auto;">Full</button>
+					</div>
+				</div>
 				<div class="setting bottom switch-wrapper">
 					<span class="switch-text">Camera moving</span>
 					<select id="camera-mode">
 						<option value="orbital">Orbital</option>
-						<option value="positional">Positional</option>
+						<option value="positional">Positional (WASD)</option>
 					</select>
 				</div>
 			</details>
-			<div class="setting top bottom switch-wrapper">
+			<div class="setting top switch-wrapper">
 				<span class="switch-text" data-locale="app.sidebar.render-tab.view-mode">View mode</span>
 				<select name="render-materials" id="render-materials">
 					<option value="render-materials-mtoon" data-locale="app.sidebar.render-tab.view-mode.vrm-mtoon">VRM MToon</option>
@@ -216,6 +261,13 @@
 					<option value="render-materials-wireframe" data-locale="app.sidebar.render-tab.view-mode.wireframe">Wireframe</option>
 					<option value="render-materials-face-orientation" data-locale="app.sidebar.render-tab.view-mode.face-orientation">Face orientation</option>
 				</select>
+			</div>
+			<div class="setting bottom switch-wrapper">
+				<span class="switch-text">Transparent PNG Photo</span>
+				<label class="switch">
+					<input type="checkbox" id="photoTransparentToggle" />
+					<span class="slider"></span>
+				</label>
 			</div>
 		</div>
 		<div class="tab-control">

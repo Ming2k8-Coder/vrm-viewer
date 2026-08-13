@@ -220,6 +220,22 @@ export function initCamera() {
 		}
 	});
 
+	document.getElementById('camHeadBtn')?.addEventListener('click', () => {
+		state.camera.position.set(0.0, 1.5, 0.6);
+		state.controls.target.set(0.0, 1.45, 0.0);
+		state.controls.update();
+	});
+	document.getElementById('camUpperBtn')?.addEventListener('click', () => {
+		state.camera.position.set(0.0, 1.25, 1.2);
+		state.controls.target.set(0.0, 1.1, 0.0);
+		state.controls.update();
+	});
+	document.getElementById('camFullBtn')?.addEventListener('click', () => {
+		state.camera.position.set(0.0, 1.0, 2.5);
+		state.controls.target.set(0.0, 0.9, 0.0);
+		state.controls.update();
+	});
+
 	if (resetCameraBtn) {
 		resetCameraBtn.addEventListener('click', () => {
 			smoothResetCamera(600);

@@ -312,9 +312,9 @@ export function initPose() {
 	// If the gesture is cancelled (e.g. the browser takes over for a
 	// system gesture), clear the pending pick so a stale pointerdown
 	// doesn't block future taps.
-	state.renderer.domElement.addEventListener('pointercancel', (event) => {
-		if (state.posePointerDown && state.posePointerDown.id === event.pointerId) {
-			state.posePointerDown = null;
-		}
+	document.getElementById('handlesToggle')?.addEventListener('change', (e) => {
+		const visible = e.target.checked;
+		if (state.poseSkeletonHelper) state.poseSkeletonHelper.visible = visible;
+		if (state.poseBoneMarkersGroup) state.poseBoneMarkersGroup.visible = visible;
 	});
 }
