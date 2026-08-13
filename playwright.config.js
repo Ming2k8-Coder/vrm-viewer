@@ -14,6 +14,8 @@ export default defineConfig({
   reporter: 'list',
   use: {
     baseURL: 'http://localhost:3000',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
     trace: 'on-first-retry',
     headless: true,
     launchOptions: {
@@ -31,7 +33,7 @@ export default defineConfig({
   webServer: {
     command: 'npx serve -l 3000 .',
     port: 3000,
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
 });

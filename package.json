@@ -5,8 +5,8 @@
   "description": "A web-based VRM model viewer with VRMA animation support built using Three.js and three-vrm.",
   "main": "index.html",
   "scripts": {
-    "test": "vitest run && playwright test",
-    "test:sanity": "vitest run",
+    "test": "vitest run --config vitest.config.js && playwright test",
+    "test:sanity": "vitest run --config vitest.config.js",
     "test:e2e": "playwright test",
     "serve": "serve ."
   },

@@ -7,7 +7,12 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-describe('VRM Viewer Sanity & HTML Structure Tests', () => {
+/**
+ * VRM Viewer Static HTML & Structural Tests
+ * Note: JSDOM validates static HTML markup, meta tags, importmaps, and DOM element IDs.
+ * Full dynamic JavaScript execution (WebGL, canvas, ES module imports) is tested in tests/e2e/viewer.spec.js via Playwright.
+ */
+describe('VRM Viewer Static HTML & Structural Tests', () => {
   let dom;
   let document;
 

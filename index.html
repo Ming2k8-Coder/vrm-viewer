@@ -866,9 +866,11 @@
 				if (isHidden) {
 					controlsPanel.removeAttribute('hidden');
 					document.getElementById('infoPanel').classList.remove('hidden');
+					panelToggleBtn.setAttribute('aria-expanded', 'true');
 				} else {
 					controlsPanel.setAttribute('hidden', '');
 					document.getElementById('infoPanel').classList.add('hidden');
+					panelToggleBtn.setAttribute('aria-expanded', 'false');
 				}
 			});
 
