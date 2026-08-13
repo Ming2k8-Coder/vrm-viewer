@@ -1621,14 +1621,46 @@
 					// Shoulders breathing rise & fall
 					const leftShoulder = humanoid.getNormalizedBoneNode('leftShoulder');
 					const rightShoulder = humanoid.getNormalizedBoneNode('rightShoulder');
-					if (leftShoulder) leftShoulder.rotation.z = (breathPhase * 0.008) * intensity;
-					if (rightShoulder) rightShoulder.rotation.z = (-breathPhase * 0.008) * intensity;
+					if (leftShoulder) leftShoulder.rotation.z = (-0.05 + breathPhase * 0.008) * intensity;
+					if (rightShoulder) rightShoulder.rotation.z = (0.05 - breathPhase * 0.008) * intensity;
 
-					// Arms subtle natural hanging sway
+					// Upper Arms: Lower arms down from T-Pose (~70° / 1.22 rad) into a natural human standing stance
 					const leftArm = humanoid.getNormalizedBoneNode('leftUpperArm');
 					const rightArm = humanoid.getNormalizedBoneNode('rightUpperArm');
-					if (leftArm) leftArm.rotation.z = (swayPhase * 0.008) * intensity;
-					if (rightArm) rightArm.rotation.z = (-swayPhase * 0.008) * intensity;
+					if (leftArm) {
+						leftArm.rotation.z = (1.22 + swayPhase * 0.015) * intensity;
+						leftArm.rotation.x = (0.08 + breathPhase * 0.005) * intensity;
+					}
+					if (rightArm) {
+						rightArm.rotation.z = (-1.22 - swayPhase * 0.015) * intensity;
+						rightArm.rotation.x = (0.08 + breathPhase * 0.005) * intensity;
+					}
+
+					// Lower Arms (Elbows): subtle natural bend & inward forearm tilt
+					const leftLowerArm = humanoid.getNormalizedBoneNode('leftLowerArm');
+					const rightLowerArm = humanoid.getNormalizedBoneNode('rightLowerArm');
+					if (leftLowerArm) {
+						leftLowerArm.rotation.z = -0.18 * intensity;
+						leftLowerArm.rotation.y = 0.25 * intensity;
+					}
+					if (rightLowerArm) {
+						rightLowerArm.rotation.z = 0.18 * intensity;
+						rightLowerArm.rotation.y = -0.25 * intensity;
+					}
+
+					// Relaxed Natural Finger Curl (eliminates stiff board fingers)
+					['left', 'right'].forEach((side) => {
+						const isLeft = side === 'left';
+						const sign = isLeft ? 1 : -1;
+						['Index', 'Middle', 'Ring', 'Little'].forEach((finger) => {
+							const prox = humanoid.getNormalizedBoneNode(`${side}${finger}Proximal`);
+							const inter = humanoid.getNormalizedBoneNode(`${side}${finger}Intermediate`);
+							if (prox) prox.rotation.z = -0.25 * sign * intensity;
+							if (inter) inter.rotation.z = -0.35 * sign * intensity;
+						});
+						const thumbProx = humanoid.getNormalizedBoneNode(`${side}ThumbProximal`);
+						if (thumbProx) thumbProx.rotation.x = 0.2 * intensity;
+					});
 				}
 
 				// 2. Micro Eye Saccades (Human Eye Drift)
