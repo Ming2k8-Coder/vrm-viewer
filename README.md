@@ -148,7 +148,8 @@ AGPLv3 (with original MIT License retained for upstream components). See `LICENS
 2. Create a feature branch
 3. Make your changes
 4. Run `npm test` to verify all tests pass
-5. Submit a pull request
+5. (Optional) Test by yourself
+6. Submit a pull request
 
 ## Acknowledgments
 

@@ -1,0 +1,205 @@
+{
+    "meta": {
+        "code": "pt-br",
+        "name": "Portuguese (Brazil)",
+        "nativeName": "Português do Brasil",
+        "direction": "ltr",
+        "status": "99%",
+        "translators": [
+            {
+                "name": "Flarom",
+                "role": "Translator",
+                "links": {
+                    "github": "https://github.com/flarom",
+                    "bluesky": "https://bsky.app/profile/flarom.neocities.org",
+                    "website": "https://flarom.neocities.org"
+                }
+            }
+        ]
+    },
+
+    "strings": {
+        "COMMON": {
+            "common.ok": "OK",
+            "common.cancel": "Cancelar",
+            "common.close": "Fechar",
+            "common.yes": "Sim",
+            "common.no": "Não",
+            "common.back": "Voltar"
+        },
+        "APP": {
+            "SIDEBAR": {
+                "HEADER": {
+                    "app.sidebar.header.open-model": "Abrir modelo",
+                    "app.sidebar.header-more-menu.open-model": "Abrir modelo",
+                    "app.sidebar.header-more-menu.model-information": "Informações do modelo",
+                    "app.sidebar.header-more-menu.settings": "Configurações",
+                    "app.sidebar.header-more-menu.keyboard-shortcuts": "Atalhos de teclado",
+                    "app.sidebar.header-more-menu.fullscreen": "Tela cheia",
+                    "app.sidebar.header-more-menu.about-figure": "Sobre o Figure"
+                },
+                "FOOTER": {
+                    "app.main.footer.take-photo": "Tirar foto"
+                },
+                "TAB CONTROLLER": {
+                    "app.sidebar.tab-control.model": "Modelo",
+                    "app.sidebar.tab-control.scene": "Cena",
+                    "app.sidebar.tab-control.render": "Renderização"
+                },
+                "MODEL TAB": {
+                    "app.sidebar.model-tab.body": "Corpo",
+                    "app.sidebar.model-tab.body.animation": "Animação",
+                    "app.sidebar.model-tab.body.reset-pose": "Resetar pose",
+                    "app.sidebar.model-tab.body.reset-pose.reset": "Resetar",
+                    "app.sidebar.model-tab.face": "Rosto",
+                    "app.sidebar.model-tab.face.look-at-camera": "Olhar para a câmera",
+                    "app.sidebar.model-tab.face.head-follows-camera": "Cabeça acompanha a câmera",
+                    "app.sidebar.model-tab.face.blink": "Piscar",
+                    "app.sidebar.model-tab.face.joystick-hint": "Arraste dentro da caixa para mirar os olhos.",
+                    "app.sidebar.model-tab.face.recenter-eyes": "Recentralizar olhos",
+                    "app.sidebar.model-tab.face.recenter-eyes.recenter": "Recentralizar",
+                    "app.sidebar.model-tab.face.clear-expressions": "Limpar todas expressões",
+                    "app.sidebar.model-tab.face.clear-expressions.reset": "Resetar",
+                    "app.sidebar.model-tab.materials": "Materiais"
+                },
+                "SCENE TAB": {
+                    "app.sidebar.scene-tab.camera": "Câmera",
+                    "app.sidebar.render-tab.camera.fov": "Campo de visão",
+                    "app.sidebar.scene-tab.light": "Luz",
+                    "app.sidebar.scene-tab.light.position-x": "Posição X",
+                    "app.sidebar.scene-tab.light.position-y": "Posição Y",
+                    "app.sidebar.scene-tab.light.position-z": "Posição Z",
+                    "app.sidebar.scene-tab.light.brightness": "Brilho",
+                    "app.sidebar.scene-tab.light.color": "Cor",
+                    "app.sidebar.scene-tab.light.reset-light": "Resetar luz",
+                    "app.sidebar.scene-tab.light.reset-light.reset": "Resetar",
+                    "app.sidebar.scene-tab.background": "Fundo",
+                    "app.sidebar.scene-tab.background.color": "Cor",
+                    "app.sidebar.scene-tab.background.skybox-blur": "Borrar skybox",
+                    "app.sidebar.scene-tab.background.skybox-position": "Posição da skybox",
+                    "app.sidebar.scene-tab.background.light-color-as-background-average": "Cor da luz como média do fundo",
+                    "app.sidebar.scene-tab.background.light-color-as-background-average.set-color": "Definir cor"
+                },
+                "RENDER TAB": {
+                    "app.sidebar.render-tab.view-mode": "Modo de exibição",
+                    "app.sidebar.render-tab.view-mode.vrm-mtoon": "VRM MToon",
+                    "app.sidebar.render-tab.view-mode.texture": "Textura",
+                    "app.sidebar.render-tab.view-mode.solid": "Solido",
+                    "app.sidebar.render-tab.view-mode.wireframe": "Vértices",
+                    "app.sidebar.render-tab.view-mode.face-orientation": "Orientação das faces"
+                }
+            },
+            "MAIN": {
+                "app.main.header.toggle-sidebar": "Alternar barra lateral",
+                "app.main.header.view-in-ar": "Ver em RA",
+                "app.main.header.play-pause-animation": "Tocar / Pausar animação (P)",
+                "app.main.header.recenter": "Recentralizar (R)"
+            }
+        },
+        "DIALOGS": {
+            "ABOUT": {
+                "dialogs.about.main.report-an-issue": "Relatar um problema",
+                "dialogs.about.main.credits": "Créditos",
+                "dialogs.about.main.legal": "Informações legais",
+                "dialogs.about.credits.libraries": "Bibliotecas",
+                "dialogs.about.credits.libraries.vrm-viewer": "Visualizador de VRM",
+                "dialogs.about.credits.libraries.3d-renderer": "Renderizador 3D",
+                "dialogs.about.credits.graphics": "Gráficos",
+                "dialogs.about.credits.graphics.symbolic-icons": "Ícones simbólicos",
+                "dialogs.about.credits.graphics.colored-icons": "Ícones coloridos",
+                "dialogs.about.credits.general-inspiration": "Inspiração geral",
+                "dialogs.about.credits.general-inspiration.design-guidelines": "Diretrizes de design",
+                "dialogs.about.legal.notice": "Este aplicativo não oferece absolutamente nenhuma garantia. Ele é licenciado sob a {licenseLink}."
+            },
+            "SETTINGS": {
+                "dialogs.settings.main.appearence": "Aparência",
+                "dialogs.settings.main.appearence.theme.light": "Claro",
+                "dialogs.settings.main.appearence.theme.dark": "Escuro",
+                "dialogs.settings.main.appearence.theme.oled": "OLED",
+                "dialogs.settings.main.language": "Idioma",
+                "dialogs.settings.main.translating": "Ajude a traduzir o Figure",
+                "dialogs.settings.main.status-bar": "Barra de status"
+            },
+            "MODEL INFO": {
+                "VRM 0.0": {
+                    "dialogs.model-info.vrm0.avatar-information": "Informações do avatar",
+                    "dialogs.model-info.vrm0.avatar-information.title": "Título",
+                    "dialogs.model-info.vrm0.avatar-information.creator": "Criador(a)",
+                    "dialogs.model-info.vrm0.avatar-information.contact-information": "Informação de contato",
+                    "dialogs.model-info.vrm0.avatar-information.reference": "Referência",
+                    "dialogs.model-info.vrm0.avatar-information.version": "Versão",
+                    "dialogs.model-info.vrm0.avatar-information.vrm-version": "Versão do VRM",
+                    "dialogs.model-info.vrm0.avatar-personality": "Personalidade do avatar",
+                    "dialogs.model-info.vrm0.avatar-personality.allowed-user-name": "Nome de usuários permitidos",
+                    "dialogs.model-info.vrm0.avatar-personality.depictions-of-violence": "Representações de violência",
+                    "dialogs.model-info.vrm0.avatar-personality.depictions-of-sexual-acts": "Representações de atos sexuais",
+                    "dialogs.model-info.vrm0.avatar-personality.commercial-use": "Uso comercial",
+                    "dialogs.model-info.vrm0.avatar-personality.permission-information-url": "URL com informação de permissão de uso",
+                    "dialogs.model-info.vrm0.redistribution-and-alteration": "Redistribuição e alteração",
+                    "dialogs.model-info.vrm0.redistribution-and-alteration.license": "Licensa",
+                    "dialogs.model-info.vrm0.usage.disallow": "Não permitido",
+                    "dialogs.model-info.vrm0.usage.allow": "Permitido",
+                    "dialogs.model-info.vrm0.license.cc0": "CC0",
+                    "dialogs.model-info.vrm0.license.cc-by": "CC BY",
+                    "dialogs.model-info.vrm0.license.cc-by-nc": "CC BY-NC",
+                    "dialogs.model-info.vrm0.license.cc-by-sa": "CC BY-SA",
+                    "dialogs.model-info.vrm0.license.cc-by-nc-sa": "CC BY-NC-SA",
+                    "dialogs.model-info.vrm0.license.redistribution-prohibited": "Redistribuição proíbida"
+                },
+                "VRM 1.0": {
+                    "dialogs.model-info.vrm1.avatar-information": "Informações do avatar",
+                    "dialogs.model-info.vrm1.avatar-information.avatar-name": "Nome do avatar",
+                    "dialogs.model-info.vrm1.avatar-information.version": "Versão",
+                    "dialogs.model-info.vrm1.avatar-information.authors": "Autores(as)",
+                    "dialogs.model-info.vrm1.avatar-information.creator-copyright": "Direitos autorais do criador",
+                    "dialogs.model-info.vrm1.avatar-information.contact-information": "Informação de contato",
+                    "dialogs.model-info.vrm1.avatar-information.references": "Referências",
+                    "dialogs.model-info.vrm1.avatar-information.third-party-licenses": "Licenças de terceiros",
+                    "dialogs.model-info.vrm1.avatar-information.vrm-version": "Versão do VRM",
+                    "dialogs.model-info.vrm1.avatar-permission": "Permissões do avatar",
+                    "dialogs.model-info.vrm1.avatar-permission.avatar-use-permission": "Permissão de uso do avatar",
+                    "dialogs.model-info.vrm1.avatar-permission.violent-usage": "Uso violento",
+                    "dialogs.model-info.vrm1.avatar-permission.sexual-usage": "Uso sexual",
+                    "dialogs.model-info.vrm1.avatar-permission.political-usage": "Uso político",
+                    "dialogs.model-info.vrm1.avatar-permission.antisocial-usage": "Uso antisocial",
+                    "dialogs.model-info.vrm1.avatar-permission.commercial-usage": "Uso comercial",
+                    "dialogs.model-info.vrm1.avatar-permission.only-author": "Apenas autores(as)",
+                    "dialogs.model-info.vrm1.avatar-permission.only-separately-licensed": "Apenas pessoas licensiadas separadamente",
+                    "dialogs.model-info.vrm1.avatar-permission.everyone": "Todo mundo",
+                    "dialogs.model-info.vrm1.redistribution-and-alteration": "Redistribuição e alteração",
+                    "dialogs.model-info.vrm1.redistribution-and-alteration.redistribution": "Redistribuição",
+                    "dialogs.model-info.vrm1.redistribution-and-alteration.alterations": "Alterações",
+                    "dialogs.model-info.vrm1.redistribution-and-alteration.attribution": "Atribuição",
+                    "dialogs.model-info.vrm1.commercial-usage.personal-non-profit": "Uso pessoal (não comercial)",
+                    "dialogs.model-info.vrm1.commercial-usage.personal-profit": "Uso pessoal (comercial permetido)",
+                    "dialogs.model-info.vrm1.commercial-usage.corporate": "Uso corporativo",
+                    "dialogs.model-info.vrm1.modification.prohibited": "Alterações proíbidas",
+                    "dialogs.model-info.vrm1.modification.allowed": "Alterações permitidas",
+                    "dialogs.model-info.vrm1.modification.allowed-redistribution": "Alterações e distribuíção permitida"
+                },
+                "VRM UNKNOWN": {
+                    "dialogs.model-info.vrm-unknown.version": "Versão"
+                },
+                "COMMON": {
+                    "dialogs.model-info.common.unknown": "Desconhecido",
+                    "dialogs.model-info.common.yes": "Sim",
+                    "dialogs.model-info.common.no": "Não"
+                }
+            },
+            "KEYBOARD SHORTCUTS": {
+                "dialogs.shortcuts.general": "Geral",
+                "dialogs.shortcuts.general.open-model": "Abrir modelo",
+                "dialogs.shortcuts.general.orbit-around": "Orbitar em volta",
+                "dialogs.shortcuts.general.zoom": "Zoom",
+                "dialogs.shortcuts.general.pan": "Mover",
+                "dialogs.shortcuts.general.play-pause": "Iniciar/Pausar",
+                "dialogs.shortcuts.general.recenter-camera": "Recentralizar câmera",
+                "dialogs.shortcuts.window": "Janela",
+                "dialogs.shortcuts.window.fullscreen": "Tela cheia",
+                "dialogs.shortcuts.window.settings": "Configurações",
+                "dialogs.shortcuts.window.keyboard-shortcuts": "Atalhos de teclado",
+                "dialogs.shortcuts.window.about-figure": "Sobre o Figure"
+            }
+        }
+    }
+}

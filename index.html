@@ -1,1898 +1,342 @@
 <!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<title>VRM Viewer</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta name="description" content="A web-based VRM model viewer with pose editing, facial expressions, gaze control, and VRMA animation support." />
-		<meta property="og:title" content="VRM Viewer" />
-		<meta property="og:description" content="Load and animate VRM 1.0 avatars in your browser. No installation required." />
-		<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>" />
-		<style>
-			body { margin: 0; font-family: 'Inter', sans-serif; overflow: hidden; }
-			canvas { display: block; width: 100vw; height: 100vh; }
-			.controls {
-				position: absolute;
-				top: 58px;
-				left: 10px;
-				max-height: calc(100vh - 68px);
-				max-width: 420px;
-				overflow-y: auto;
-				background: rgba(20, 20, 30, 0.7);
-				-webkit-backdrop-filter: blur(10px);
-				backdrop-filter: blur(10px);
-				color: white;
-				padding: 20px;
-				border-radius: 12px;
-				z-index: 100;
-				display: flex;
-				flex-direction: column;
-				gap: 12px;
-				box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-				border: 1px solid rgba(255, 255, 255, 0.18);
-				transition: left 0.3s ease;
-			}
-			.controls[hidden] {
-				display: none;
-			}
-			.control-section {
-				background: rgba(255, 255, 255, 0.05);
-				padding: 10px;
-				border-radius: 8px;
-				display: flex;
-				flex-direction: column;
-				gap: 8px;
-			}
-			.control-section h3 {
-				margin: 0;
-				font-size: 14px;
-				border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-				padding-bottom: 5px;
-			}
-			
-			/* Controls and buttons */
-			button {
-				padding: 8px 12px;
-				border: none;
-				border-radius: 6px;
-				cursor: pointer;
-				font-weight: 600;
-				color: white;
-				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-				transition: filter 0.2s, transform 0.1s;
-			}
-			button:hover {
-				filter: brightness(1.1);
-			}
-			button:active {
-				transform: scale(0.98);
-			}
-			button:disabled {
-				opacity: 0.5;
-				cursor: not-allowed;
-			}
-			.vrma-grid {
-				display: grid;
-				grid-template-columns: repeat(3, 1fr);
-				gap: 5px;
-			}
-			.file-input-group {
-				display: flex;
-				gap: 10px;
-				align-items: center;
-			}
-			.file-name {
-				font-size: 12px;
-				color: #aaa;
-				white-space: nowrap;
-				overflow: hidden;
-				text-overflow: ellipsis;
-			}
-			input[type="file"] {
-				display: none;
-			}
-			.custom-file-label {
-				padding: 8px 12px;
-				background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
-				color: white;
-				border-radius: 6px;
-				cursor: pointer;
-				font-size: 13px;
-				font-weight: bold;
-				text-align: center;
-			}
-			.custom-file-label:hover {
-				filter: brightness(1.1);
-			}
-			.playback-controls {
-				display: flex;
-				gap: 5px;
-			}
-			.playback-controls button {
-				flex: 1;
-				background: #2196f3;
-			}
+<html>
 
-			/* Info Panel */
-			#infoPanel {
-				position: absolute;
-				top: 10px;
-				right: 10px;
-				background: rgba(0, 0, 0, 0.85);
-				color: #eee;
-				padding: 15px;
-				border-radius: 12px;
-				z-index: 100;
-				width: 250px;
-				font-size: 13px;
-				font-family: monospace;
-				box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-				pointer-events: auto;
-				transition: transform 0.3s ease, opacity 0.3s ease;
-			}
-			#infoPanel.hidden {
-				transform: translateX(120%);
-				opacity: 0;
-				pointer-events: none;
-			}
-			#infoPanel h3 {
-				margin-top: 0;
-				margin-bottom: 10px;
-				border-bottom: 1px solid #555;
-				padding-bottom: 5px;
-				font-family: sans-serif;
-			}
-			.info-row {
-				display: flex;
-				justify-content: space-between;
-				margin-bottom: 4px;
-				border-bottom: 1px solid #333;
-				padding-bottom: 2px;
-			}
-			.info-label {
-				color: #aaa;
-			}
-			.info-value {
-				font-weight: bold;
-				color: #aaffaa;
-			}
+<head>
+	<meta charset="utf-8" />
+	<title>VRM Viewer</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-			/* Drag Overlay */
-			#dragOverlay {
-				position: absolute;
-				top: 0;
-				left: 0;
-				width: 100%;
-				height: 100%;
-				background: rgba(255, 255, 255, 0.2);
-				z-index: 999;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				font-size: 32px;
-				color: #333;
-				font-weight: bold;
-				pointer-events: none;
-				opacity: 0;
-				transition: opacity 0.2s;
-				-webkit-backdrop-filter: blur(5px);
-				backdrop-filter: blur(5px);
-			}
-			#dragOverlay.active {
-				opacity: 1;
-			}
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>VRM Viewer</title>
+	<meta name="description" content="A web-based VRM model viewer with pose editing, facial expressions, gaze control, and VRMA animation support.">
+	<meta property="og:title" content="Figure - VRM & VRMA Model Viewer for Web">
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>" />
+	<meta property="og:url" content="https://flarom.github.io/figure" />
+	<meta property="og:site_name" content="Figure" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content="Figure - VRM & VRMA Model Viewer" />
+	<meta name="twitter:description" content="Preview VRM and VRMA models directly in your browser."/>
+	<meta name="twitter:image" content="static/og-image.png" />
 
-			/* Panel Toggle Btn */
-			#panelToggleBtn {
-				position: fixed;
-				top: 10px;
-				left: 10px;
-				z-index: 101; 
-				width: 40px;
-				height: 40px;
-				padding: 0;
-				background: linear-gradient(145deg, #6a82fb, #fc5c7d);
-				color: white;
-				border: none;
-				border-radius: 8px;
-				cursor: pointer;
-				font-size: 18px;
-				font-weight: bold;
-				box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-				transition: background 0.3s ease, transform 0.1s ease;
-			}
-			#panelToggleBtn:hover {
-				background: linear-gradient(145deg, #5c75e8, #e84c6c);
-				transform: translateY(-2px);
-			}
+	<link rel="stylesheet" href="style/palette.css">
+	<link rel="stylesheet" href="style/share.css">
+	<link rel="stylesheet" href="style/prompts.css">
+	<link rel="shortcut icon" href="static/favicon.svg" type="image/x-icon">
+</head>
 
-			/* Tabs */
-			.tab-bar {
-				display: flex;
-				gap: 5px;
-			}
-			.tab-bar button {
-				flex: 1;
-				background: #444;
-			}
-			.tab-bar button.active {
-				background: linear-gradient(145deg, #6a82fb, #fc5c7d);
-			}
-			.tab-panel {
-				display: flex;
-				flex-direction: column;
-				gap: 12px;
-			}
-			.tab-panel[hidden] {
-				display: none;
-			}
-
-			/* VRMA Grid */
-			#vrmaButtons {
-				display: grid;
-				grid-template-columns: repeat(3, 1fr);
-				gap: 5px;
-			}
-			#vrmaButtons button {
-				background: linear-gradient(135deg, #4CAF50, #2e8b57);
-				font-size: 11px;
-				padding: 6px;
-				text-overflow: ellipsis;
-				overflow: hidden;
-				white-space: nowrap;
-			}
-
-			/* Pose/Face sliders */
-			.pose-top-bar {
-				display: flex;
-				flex-wrap: wrap;
-				align-items: center;
-				gap: 8px;
-				margin-bottom: 6px;
-			}
-			.pose-mode-select {
-				background: rgba(255, 255, 255, 0.1);
-				color: white;
-				border: 1px solid rgba(255, 255, 255, 0.2);
-				border-radius: 6px;
-				padding: 5px 8px;
-				font-size: 11px;
-				font-weight: bold;
-				cursor: pointer;
-				outline: none;
-			}
-			.pose-mode-select option {
-				background: #222;
-				color: white;
-			}
-			#poseSliders, #poseSlidersDetail, #expressionSliders, #lookAtSliders {
-				display: flex;
-				flex-direction: column;
-				gap: 4px;
-				max-height: 32vh;
-				overflow-y: auto;
-				overflow-x: hidden;
-				padding-right: 4px;
-			}
-			.pose-placeholder {
-				font-size: 12px;
-				color: #aaa;
-				padding: 10px 0;
-			}
-			.bone-group-title {
-				margin: 6px 0 2px;
-				font-size: 12px;
-				color: #9aa0ff;
-				border-bottom: 1px solid rgba(255,255,255,0.15);
-			}
-			.bone-row, .face-row {
-				display: flex;
-				align-items: center;
-				gap: 5px;
-				font-size: 11px;
-			}
-			.bone-row.selected {
-				background: rgba(106, 130, 251, 0.25);
-			}
-			.bone-label {
-				width: 70px;
-				white-space: nowrap;
-				overflow: hidden;
-				text-overflow: ellipsis;
-			}
-			.bone-axis-wrap {
-				display: flex;
-				flex: 1;
-				align-items: center;
-			}
-			.bone-axis-wrap input[type=range] {
-				width: 100%;
-			}
-			.bone-readout {
-				width: 30px;
-				text-align: right;
-			}
-			.face-row input[type=range] {
-				flex: 1;
-			}
-
-			.status {
-				margin-top: 10px;
-				font-size: 12px;
-				color: #ccc;
-				text-align: center;
-			}
-
-			.features-section-col { display: flex; flex-direction: column; gap: 5px; }
-			.features-label { font-size: 11px; }
-			.features-toggle-label { font-size: 11px; display: flex; align-items: center; gap: 5px; }
-			
-			.lang-switch {
-				position: absolute;
-				top: 10px;
-				right: 10px;
-				z-index: 1000;
-				color: white;
-				background: #333;
-				padding: 5px 10px;
-				text-decoration: none;
-				border-radius: 4px;
-				font-family: sans-serif;
-				font-size: 12px;
-				cursor: pointer;
-				border: none;
-			}
-
-			:lang(en) .lang-ja { display: none !important; }
-			:lang(ja) .lang-en { display: none !important; }
-		</style>
-	
-		<script>
-			// Auto-detect language
-			if (!sessionStorage.getItem('langSet')) {
-				document.documentElement.lang = navigator.language.startsWith('ja') ? 'ja' : 'en';
-			} else {
-				document.documentElement.lang = sessionStorage.getItem('langSet');
-			}
-
-			function toggleLang() {
-				const nextLang = document.documentElement.lang === 'ja' ? 'en' : 'ja';
-				document.documentElement.lang = nextLang;
-				sessionStorage.setItem('langSet', nextLang);
-			}
-		</script>
-	</head>
-
-	<body>
-		<button class="lang-switch" onclick="toggleLang()"><span class="lang-en">日本語</span><span class="lang-ja">English</span></button>
-		<div id="dragOverlay">
-			<span class="lang-en">Drop VRM or VRMA here</span>
-			<span class="lang-ja">VRM または VRMA をドロップ</span>
-		</div>
-		<div id="infoPanel">
-			<h3><span class="lang-en">Model Info</span><span class="lang-ja">モデル情報</span></h3>
-			<div class="info-row"><span class="info-label"><span class="lang-en">Format:</span><span class="lang-ja">形式:</span></span><span class="info-value" id="infoFormat">-</span></div>
-			<div class="info-row"><span class="info-label"><span class="lang-en">Polygons:</span><span class="lang-ja">ポリゴン数:</span></span><span class="info-value" id="infoPolygons">-</span></div>
-			<div class="info-row"><span class="info-label"><span class="lang-en">Meshes:</span><span class="lang-ja">メッシュ数:</span></span><span class="info-value" id="infoMeshes">-</span></div>
-			<div class="info-row"><span class="info-label"><span class="lang-en">Sub-meshes:</span><span class="lang-ja">サブメッシュ:</span></span><span class="info-value" id="infoSubmeshes">-</span></div>
-			<div class="info-row"><span class="info-label"><span class="lang-en">Materials:</span><span class="lang-ja">マテリアル:</span></span><span class="info-value" id="infoMaterials">-</span></div>
-			<div class="info-row"><span class="info-label"><span class="lang-en">Textures:</span><span class="lang-ja">テクスチャ:</span></span><span class="info-value" id="infoTextures">-</span></div>
-			<div class="info-row"><span class="info-label"><span class="lang-en">Bones:</span><span class="lang-ja">ボーン数:</span></span><span class="info-value" id="infoBones">-</span></div>
-			<div class="info-row"><span class="info-label"><span class="lang-en">Blendshapes:</span><span class="lang-ja">ブレンドシェイプ:</span></span><span class="info-value" id="infoBlendshapes">-</span></div>
-			<!-- VRM metadata card populated by src/vrmInfo.js after load -->
-			<div id="vrmDetailsCard" style="margin-top:6px;"></div>
-		</div>
-
-		<button id="panelToggleBtn" title="Hide controls" aria-expanded="true" aria-controls="controlsPanel">☰</button>
-		<div class="controls" id="controlsPanel">
-			<div class="tab-bar">
-				<button id="tabFeaturesBtn" class="tab-btn"><span class="lang-en">Features</span><span class="lang-ja">機能</span></button>
-				<button id="tabAnimationBtn" class="tab-btn active"><span class="lang-en">Animation</span><span class="lang-ja">アニメーション</span></button>
-				<button id="tabPoseBtn" class="tab-btn"><span class="lang-en">Pose</span><span class="lang-ja">ポーズ</span></button>
-				<button id="tabFaceBtn" class="tab-btn"><span class="lang-en">Face</span><span class="lang-ja">顔</span></button>
+<body class="theme-light">
+	<!-- 
+		MARK: SIDEBAR
+	-->
+	<div id="controls-bar" class="sidebar">
+		<!-- 
+			MARK: Sidebar header
+		-->
+		<header class="window-title">
+			<div class="header-left">
+				<button id="openFileBtn" class="icon-button hide-on-tablet" translate="no" title="Open model" data-locale-attr="title:app.sidebar.header.open-model">open_in_browser</button>
+				<button class="icon-button hide-on-pc" onmousedown="toggleSidebar('controls-bar')">arrow_back</button>
 			</div>
-
-			<div id="animationPanel" class="tab-panel">
-				<div>
-					<label><span class="lang-en">VRM Model:</span><span class="lang-ja">VRMモデル:</span></label>
-					<span id="vrmName">sample.vrm</span>
-					<button id="openFileBtn"><span class="lang-en">Open .vrm / .vrma...</span><span class="lang-ja">ファイルを開く (.vrm / .vrma)...</span></button>
-					<input type="file" id="filePicker" accept=".vrm,.vrma" multiple hidden />
-				</div>
-				<div id="vrmaButtons">
-					<label><span class="lang-en">VRMA Animations:</span><span class="lang-ja">VRMAアニメーション:</span></label>
-				</div>
-				<div>
-					<button id="playBtn" disabled><span class="lang-en">Play</span><span class="lang-ja">再生</span></button>
-					<button id="pauseBtn" disabled><span class="lang-en">Pause</span><span class="lang-ja">一時停止</span></button>
-					<button id="stopBtn" disabled><span class="lang-en">Stop</span><span class="lang-ja">停止</span></button>
-				</div>
+			<div class="header-center">
+				<div id="vrm-model-name">Figure</div>
+				<span id="vrm-author-name"></span>
 			</div>
-
-			<div id="posePanel" class="tab-panel" hidden>
-				<div class="pose-top-bar">
-					<button id="resetPoseBtn"><span class="lang-en">Reset Pose</span><span class="lang-ja">ポーズリセット</span></button>
-					<select id="poseModeSelect" class="pose-mode-select" title="Target pose preset for reset">
-						<option value="dynamicA">Dynamic A-Pose (Human Standing)</option>
-						<option value="rigidT">Rigid T-Pose (Default Rest)</option>
-					</select>
-					<label class="inline-toggle"><input type="checkbox" id="handlesToggle" checked /> <span class="lang-en">3D Handles</span><span class="lang-ja">3Dハンドル</span></label>
-				</div>
-				<div id="poseSliders"></div>
-				<details class="detail-bones">
-					<summary><span class="lang-en">Show fingers / detail bones</span><span class="lang-ja">指・詳細ボーンを表示</span></summary>
-					<div id="poseSlidersDetail"></div>
-				</details>
-			</div>
-
-			<div id="facePanel" class="tab-panel" hidden>
-				<div>
-					<button id="resetFaceBtn"><span class="lang-en">Reset Face</span><span class="lang-ja">表情リセット</span></button>
-				</div>
-				<h4 class="bone-group-title"><span class="lang-en">Expressions</span><span class="lang-ja">表情</span></h4>
-				<div id="expressionSliders"></div>
-				<h4 class="bone-group-title"><span class="lang-en">Look At</span><span class="lang-ja">視線移動</span></h4>
-				<div id="lookAtSliders"></div>
-				<label class="inline-toggle"><input type="checkbox" id="followMouseToggle" /> <span class="lang-en">Follow Mouse</span><span class="lang-ja">マウス追従</span></label>
-			</div>
-
-			<div id="featuresPanel" class="tab-panel" hidden>
-				<div class="control-section">
-					<h3><span class="lang-en">Camera & View</span><span class="lang-ja">カメラ & ビュー</span></h3>
-					<div class="features-section-col">
-						<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:4px;">
-							<button id="camHeadBtn" class="cam-preset-btn"><span class="lang-en">Head</span><span class="lang-ja">頭部</span></button>
-							<button id="camUpperBtn" class="cam-preset-btn"><span class="lang-en">Upper Body</span><span class="lang-ja">上半身</span></button>
-							<button id="camFullBtn" class="cam-preset-btn"><span class="lang-en">Full Body</span><span class="lang-ja">全身</span></button>
-							<button id="camResetBtn" class="cam-preset-btn"><span class="lang-en">Reset Cam</span><span class="lang-ja">カメラリセット</span></button>
-						</div>
-						<label for="cameraFovSlider" class="features-label"><span class="lang-en">FOV:</span><span class="lang-ja">画角:</span> <span id="cameraFovVal">30°</span></label>
-						<input type="range" id="cameraFovSlider" min="15" max="90" step="1" value="30">
-					</div>
-				</div>
-
-				<div class="control-section">
-					<h3><span class="lang-en">Lighting & Rendering</span><span class="lang-ja">ライティング & レンダリング</span></h3>
-					<div class="features-section-col">
-						<label for="dirLightSlider" class="features-label"><span class="lang-en">Directional Light:</span><span class="lang-ja">平行光源:</span> <span id="dirLightVal">3.0</span></label>
-						<input type="range" id="dirLightSlider" min="0" max="10" step="0.1" value="3.0">
-						<label for="ambLightSlider" class="features-label"><span class="lang-en">Ambient Light:</span><span class="lang-ja">環境光:</span> <span id="ambLightVal">1.0</span></label>
-						<input type="range" id="ambLightSlider" min="0" max="5" step="0.1" value="1.0">
-						<label class="features-toggle-label"><input type="checkbox" id="wireframeToggle"> <span class="lang-en">Wireframe Mode</span><span class="lang-ja">ワイヤーフレーム表示</span></label>
-						<label class="features-toggle-label"><input type="checkbox" id="shadowsToggle"> <span class="lang-en">Enable Shadows</span><span class="lang-ja">影の表示</span></label>
-					</div>
-				</div>
-
-				<div class="control-section">
-					<h3><span class="lang-en">Skybox & Background</span><span class="lang-ja">スカイボックス & 背景</span></h3>
-					<div class="features-section-col">
-						<div style="display:flex;gap:8px;align-items:center;">
-							<label for="bgColorPicker" class="features-label" style="margin:0;"><span class="lang-en">Bg Color:</span><span class="lang-ja">背景色:</span></label>
-							<input type="color" id="bgColorPicker" value="#222222" style="border:none;background:none;cursor:pointer;height:28px;">
-						</div>
-						<button id="uploadSkyboxBtn"><span class="lang-en">Upload Skybox Image...</span><span class="lang-ja">スカイボックス画像をアップロード...</span></button>
-						<input type="file" id="skyboxFileInput" accept="image/*" hidden />
-						<label for="skyboxBlurSlider" class="features-label"><span class="lang-en">Blur:</span><span class="lang-ja">ぼかし:</span> <span id="skyboxBlurVal">0.0</span></label>
-						<input type="range" id="skyboxBlurSlider" min="0" max="1" step="0.05" value="0.0">
-						<label for="skyboxRotationSlider" class="features-label"><span class="lang-en">Rotation:</span><span class="lang-ja">回転:</span> <span id="skyboxRotationVal">0°</span></label>
-						<input type="range" id="skyboxRotationSlider" min="0" max="360" step="1" value="0">
-					</div>
-				</div>
-
-				<div class="control-section">
-					<h3><span class="lang-en">Human Behaviors</span><span class="lang-ja">人間の振る舞い</span></h3>
-					<div class="features-section-col">
-						<label class="features-toggle-label"><input type="checkbox" id="proceduralIdleToggle" checked> <span class="lang-en">Procedural Standing Motion</span><span class="lang-ja">動的立ち姿モーション (計算アニメ)</span></label>
-						<label for="proceduralIntensitySlider" class="features-label"><span class="lang-en">Motion Intensity:</span><span class="lang-ja">モーション強度:</span> <span id="proceduralIntensityVal">1.0</span></label>
-						<input type="range" id="proceduralIntensitySlider" min="0" max="2" step="0.1" value="1.0">
-						<label class="features-toggle-label"><input type="checkbox" id="eyeSaccadesToggle" checked> <span class="lang-en">Micro Eye Saccades</span><span class="lang-ja">視線微動 (サッカード)</span></label>
-						<label class="features-toggle-label"><input type="checkbox" id="blinkToggle" checked> <span class="lang-en">Auto Blinking</span><span class="lang-ja">自動まばたき</span></label>
-					</div>
-				</div>
-
-				<div class="control-section">
-					<h3><span class="lang-en">Photo Mode & AR</span><span class="lang-ja">フォトモード & AR</span></h3>
-					<div class="features-section-col">
-						<button id="takePhotoBtn">📷 <span class="lang-en">Take Photo (PNG)</span><span class="lang-ja">写真を撮影 (PNG)</span></button>
-						<label class="features-toggle-label"><input type="checkbox" id="photoTransparentToggle"> <span class="lang-en">Transparent Background</span><span class="lang-ja">背景を透過して保存</span></label>
-						<button id="enterArBtn" style="margin-top:6px;background:linear-gradient(135deg,#38ef7d,#11998e);">🥽 <span class="lang-en">Enter AR Mode (WebXR)</span><span class="lang-ja">ARモードを開始 (WebXR)</span></button>
+			<div class="header-right">
+				<div class="dropdown">
+					<button class="icon-button" translate="no" onmousedown="toggleDropdown('more-menu')">more_vert</button>
+					<div class="dropdown-content menu" id="more-menu">
+						<button class="text-button" id="openFileBtn2">
+							<span data-locale="app.sidebar.header-more-menu.open-model">Open model</span>
+							<kbd>Ctrl+O</kbd>
+						</button>
+						<button class="text-button" id="modelInfoBtn">
+							<span data-locale="app.sidebar.header-more-menu.model-information">Model information</span>
+						</button>
+						<hr>
+						<button class="text-button" onmouseup="document.body.requestFullscreen();">
+							<span data-locale="app.sidebar.header-more-menu.fullscreen">Fullscreen</span>
+							<kbd>F11</kbd>
+						</button>
+						<hr>
+						<button class="text-button" onmouseup="showMessageFromFile('dialog/settings.html'); hideAllMenus()">
+							<span data-locale="app.sidebar.header-more-menu.settings">Settings</span>
+							<kbd>Ctrl+,</kbd>
+						</button>
+						<button class="text-button" onmouseup="showMessageFromFile('dialog/shortcuts.html'); hideAllMenus()">
+							<span data-locale="app.sidebar.header-more-menu.keyboard-shortcuts">Keyboard shortcuts</span>
+							<kbd>Ctrl+?</kbd>
+						</button>
+						<button class="text-button" onmouseup="showMessageFromFile('dialog/about.html'); hideAllMenus()">
+							<span data-locale="app.sidebar.header-more-menu.about-figure">About Figure</span>
+							<kbd>F1</kbd>
+						</button>
 					</div>
 				</div>
 			</div>
-
-			<div class="status" id="status"><span class="lang-en">Loading VRM model...</span><span class="lang-ja">VRMモデルを読み込み中...</span></div>
-		</div>
-
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
-					"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/",
-					"@pixiv/three-vrm": "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@3.5.5/lib/three-vrm.module.min.js",
-					"@pixiv/three-vrm-animation": "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm-animation@3.5.5/lib/three-vrm-animation.module.min.js",
-					"vrm-viewer/boneConfig": "./src/boneConfig.js",
-					"vrm-viewer/settings": "./src/settings.js",
-					"vrm-viewer/hotkeys": "./src/hotkeys.js",
-					"vrm-viewer/vrmInfo": "./src/vrmInfo.js",
-					"vrm-viewer/photo": "./src/photo.js",
-					"vrm-viewer/skybox": "./src/skybox.js",
-					"vrm-viewer/cameraPresets": "./src/cameraPresets.js",
-					"vrm-viewer/ar": "./src/ar.js",
-					"vrm-viewer/materials": "./src/materials.js"
-				}
-			}
-		</script>
-
-		<script type="module">
-			import * as THREE from 'three';
-			import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-			import { TransformControls } from 'three/addons/controls/TransformControls.js';
-			import { VRMLoaderPlugin, VRMUtils, VRMExpressionPresetName } from '@pixiv/three-vrm';
-			import { VRMAnimationLoaderPlugin, createVRMAnimationClip } from '@pixiv/three-vrm-animation';
-			import { POSE_BONE_GROUPS, HANDLE_BONES, BONE_AXIS_LIMITS, getBoneCategory, getBoneLimits } from 'vrm-viewer/boneConfig';
-			import { loadPrefs, savePrefs } from 'vrm-viewer/settings';
-			import { initHotkeys, registerHotkey, showHelp } from 'vrm-viewer/hotkeys';
-			import { extractVRMInfo, renderVRMInfoCard } from 'vrm-viewer/vrmInfo';
-			import { captureScreenshot } from 'vrm-viewer/photo';
-			import { setBackgroundColor, setSkyboxSource, setBackgroundBlur, setBackgroundRotation } from 'vrm-viewer/skybox';
-			import { applyCameraPreset, setCameraFOV } from 'vrm-viewer/cameraPresets';
-			import { startARSession, updateARFrame, placeVRMAtReticle, isARRunning } from 'vrm-viewer/ar';
-			import { setWireframeMode, setShadowsEnabled } from 'vrm-viewer/materials';
-
-			// DOM elements
-			const vrmaButtonsContainer = document.getElementById('vrmaButtons');
-			const playBtn = document.getElementById('playBtn');
-			const pauseBtn = document.getElementById('pauseBtn');
-			const stopBtn = document.getElementById('stopBtn');
-			const statusDiv = document.getElementById('status');
-			const vrmNameSpan = document.getElementById('vrmName');
-			const openFileBtn = document.getElementById('openFileBtn');
-			const filePicker = document.getElementById('filePicker');
-			const panelToggleBtn = document.getElementById('panelToggleBtn');
-			const controlsPanel = document.getElementById('controlsPanel');
-			const tabAnimationBtn = document.getElementById('tabAnimationBtn');
-			const tabPoseBtn = document.getElementById('tabPoseBtn');
-			const tabFaceBtn = document.getElementById('tabFaceBtn');
-			const animationPanel = document.getElementById('animationPanel');
-			const posePanel = document.getElementById('posePanel');
-			const facePanel = document.getElementById('facePanel');
-			const poseSlidersContainer = document.getElementById('poseSliders');
-			const poseSlidersDetailContainer = document.getElementById('poseSlidersDetail');
-			const resetPoseBtn = document.getElementById('resetPoseBtn');
-			const handlesToggle = document.getElementById('handlesToggle');
-			const expressionSlidersContainer = document.getElementById('expressionSliders');
-			const lookAtSlidersContainer = document.getElementById('lookAtSliders');
-			const resetFaceBtn = document.getElementById('resetFaceBtn');
-			const followMouseToggle = document.getElementById('followMouseToggle');
-
-			// Helper for bilingual status messages
-			function setStatus(enText, jaText) {
-				statusDiv.innerHTML = `<span class="lang-en">${enText}</span><span class="lang-ja">${jaText || enText}</span>`;
-			}
-
-			// Object URL registry to prevent memory leaks
-			const userObjectUrls = [];
-			function trackObjectUrl(url) {
-				userObjectUrls.push(url);
-				return url;
-			}
-			function revokeObjectUrls() {
-				while (userObjectUrls.length > 0) {
-					const url = userObjectUrls.pop();
-					URL.revokeObjectURL(url);
-				}
-			}
-
-			// --- Three.js Setup ---
-			const renderer = new THREE.WebGLRenderer({ antialias: true });
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			renderer.setPixelRatio( window.devicePixelRatio );
-			renderer.outputColorSpace = THREE.SRGBColorSpace;
-			document.body.appendChild( renderer.domElement );
-
-			const camera = new THREE.PerspectiveCamera( 30.0, window.innerWidth / window.innerHeight, 0.1, 20.0 );
-			camera.position.set( 0.0, 1.0, 5.0 );
-
-			const controls = new OrbitControls( camera, renderer.domElement );
-			controls.screenSpacePanning = true;
-			controls.target.set( 0.0, 1.0, 0.0 );
-			controls.update();
-
-			const scene = new THREE.Scene();
-			scene.background = new THREE.Color(0x222222);
-
-			const light = new THREE.DirectionalLight( 0xffffff, 3.0 );
-			light.position.set( 1.0, 1.0, 1.0 ).normalize();
-			scene.add( light );
-
-			const ambientLight = new THREE.AmbientLight( 0xffffff, 1.0 );
-			scene.add( ambientLight );
-
-			// --- Global Variables for VRM and Animation ---
-			let currentVrm = undefined;
-			let currentMixer = undefined;
-			let currentAction = undefined;
-			let vrmaAnimationClip = undefined;
-			const CROSSFADE_DURATION = 0.5;
-
-			// --- GLTF Loader with VRM and VRMA Plugins ---
-			const loader = new GLTFLoader();
-			loader.crossOrigin = 'anonymous';
-
-			loader.register( ( parser ) => {
-				return new VRMLoaderPlugin( parser );
-			} );
-
-			loader.register( ( parser ) => {
-				return new VRMAnimationLoaderPlugin( parser );
-			} );
-
-			// --- File Paths ---
-			const VRM_MODEL_URL = './VRM/sample.vrm';
-			const VRMA_ANIMATIONS = [
-				{ name: 'Angry', url: './VRMA/Angry.vrma' },
-				{ name: 'Blush', url: './VRMA/Blush.vrma' },
-				{ name: 'Clapping', url: './VRMA/Clapping.vrma' },
-				{ name: 'Goodbye', url: './VRMA/Goodbye.vrma' },
-				{ name: 'Jump', url: './VRMA/Jump.vrma' },
-				{ name: 'LookAround', url: './VRMA/LookAround.vrma' },
-				{ name: 'Relax', url: './VRMA/Relax.vrma' },
-				{ name: 'Sad', url: './VRMA/Sad.vrma' },
-				{ name: 'Sleepy', url: './VRMA/Sleepy.vrma' },
-				{ name: 'Surprised', url: './VRMA/Surprised.vrma' },
-				{ name: 'Thinking', url: './VRMA/Thinking.vrma' },
-			];
-
-			function addVrmaButton(name, url) {
-				const button = document.createElement('button');
-				button.className = 'vrma-btn';
-				button.textContent = name;
-				button.title = name;
-				button.disabled = currentVrm === undefined;
-				button.addEventListener('click', () => selectAnimation(url));
-				vrmaButtonsContainer.appendChild(button);
-			}
-
-			// --- File Loading Functions ---
-			async function loadVRM(url, displayName = url) {
-				try {
-					setStatus('Loading VRM model...', 'VRMモデルを読み込み中...');
-
-					return new Promise((resolve, reject) => {
-						loader.load(
-							url,
-							(gltf) => {
-								const vrm = gltf.userData.vrm;
-
-								VRMUtils.removeUnnecessaryVertices( gltf.scene );
-								VRMUtils.combineSkeletons( gltf.scene );
-								VRMUtils.combineMorphs( vrm );
-
-								vrm.scene.traverse( ( obj ) => {
-									obj.frustumCulled = false;
-								} );
-
-								if (currentVrm) {
-									deselectBone();
-									scene.remove(currentVrm.scene);
-									VRMUtils.deepDispose(currentVrm.scene);
-									revokeObjectUrls();
-								}
-
-								if (currentAction) {
-									currentAction.stop();
-									currentAction = undefined;
-								}
-								vrmaAnimationClip = undefined;
-
-								scene.add( vrm.scene );
-								vrm.scene.rotation.y = Math.PI; // Rotate model to face front
-								currentVrm = vrm;
-
-								currentMixer = new THREE.AnimationMixer( vrm.scene );
-
-								buildPoseUI();
-								if (activeTab === 'pose') {
-									syncAllSliders();
-									boneHandlesGroup.visible = handlesToggle.checked;
-								}
-
-								buildFaceUI();
-								if (followMouseToggle.checked && vrm.lookAt) {
-									vrm.lookAt.target = lookAtTarget;
-								}
-								if (activeTab === 'face') syncFaceUI();
-
-								vrmNameSpan.textContent = displayName;
-								setStatus('VRM model loaded successfully!', 'VRMモデルの読み込みが完了しました！');
-								console.log( 'VRM loaded:', vrm );
-
-								document.getElementById('infoFormat').textContent = 'VRM 1.0/0.0';
-								let polygons = 0, meshes = 0, submeshes = 0, materials = new Set(), textures = new Set(), bones = 0;
-								vrm.scene.traverse((obj) => {
-									if (obj.isMesh) {
-										meshes++;
-										if (obj.geometry) {
-											submeshes++;
-											if (obj.geometry.index) {
-												polygons += obj.geometry.index.count / 3;
-											} else if (obj.geometry.attributes.position) {
-												polygons += obj.geometry.attributes.position.count / 3;
-											}
-										}
-										if (obj.material) {
-											const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
-											mats.forEach(m => {
-												materials.add(m.uuid);
-												if (m.map) textures.add(m.map.uuid);
-											});
-										}
-									}
-									if (obj.isBone) bones++;
-								});
-								document.getElementById('infoPolygons').textContent = polygons.toLocaleString();
-								document.getElementById('infoMeshes').textContent = meshes;
-								document.getElementById('infoSubmeshes').textContent = submeshes;
-								document.getElementById('infoMaterials').textContent = materials.size;
-								document.getElementById('infoTextures').textContent = textures.size;
-								document.getElementById('infoBones').textContent = bones;
-								document.getElementById('infoBlendshapes').textContent = vrm.expressionManager ? vrm.expressionManager.expressions.length : 0;
-
-								// Populate VRM metadata details card (spec version, author, license, springbones...)
-								try {
-									const vrmDetailsCard = document.getElementById('vrmDetailsCard');
-									if (vrmDetailsCard) {
-										const info = extractVRMInfo(vrm);
-										renderVRMInfoCard(info, vrmDetailsCard);
-									}
-								} catch (e) {
-									console.warn('vrmInfo extraction failed:', e);
-								}
-
-								resolve(vrm);
-							},
-							(progress) => {
-								const percent = (100.0 * ( progress.loaded / progress.total )).toFixed(1);
-								setStatus(`Loading VRM model... ${percent}%`, `VRMモデルを読み込み中... ${percent}%`);
-							},
-							(error) => {
-								console.error('Error loading VRM:', error);
-								setStatus('Error loading VRM model', 'VRMモデルの読み込みエラー');
-								reject(error);
-							}
-						);
-					});
-				} catch (error) {
-					console.error('Error in loadVRM:', error);
-					setStatus('Error loading VRM model', 'VRMモデルの読み込みエラー');
-				}
-			}
-
-			async function loadVRMA(url) {
-				if (!currentVrm) {
-					setStatus('No VRM model loaded.', 'VRMモデルが読み込まれていません。');
-					throw new Error('No VRM model loaded.');
-				}
-
-				setStatus('Loading animation...', 'アニメーションを読み込み中...');
-
-				return new Promise((resolve, reject) => {
-					loader.load(
-						url,
-						(gltf) => {
-							console.log('GLTF loaded (VRMA):', gltf);
-
-							const vrmAnimationData = gltf.userData.vrmAnimations && gltf.userData.vrmAnimations[0];
-
-							if (vrmAnimationData) {
-								const clip = createVRMAnimationClip(vrmAnimationData, currentVrm);
-
-								if (clip) {
-									setStatus('Animation loaded successfully!', 'アニメーションの読み込みが完了しました！');
-									console.log('Generated AnimationClip:', clip);
-									resolve(clip);
-								} else {
-									const err = new Error('Could not create AnimationClip from VRMA data.');
-									setStatus(err.message, err.message);
-									reject(err);
-								}
-							} else {
-								const err = new Error('Could not create AnimationClip from VRMA data.');
-								setStatus(err.message, err.message);
-								reject(err);
-							}
-						},
-						(progress) => {
-							const percent = (100.0 * ( progress.loaded / progress.total )).toFixed(1);
-							setStatus(`Loading animation... ${percent}%`, `アニメーションを読み込み中... ${percent}%`);
-						},
-						(error) => {
-							console.error('Error loading animation:', error);
-							setStatus('Error loading animation', 'アニメーションの読み込みエラー');
-							reject(error);
-						}
-					);
-				});
-			}
-
-			// --- Animation Control Functions ---
-			function playAnimation() {
-				if (currentVrm && vrmaAnimationClip && currentMixer) {
-					if (currentAction && currentAction.getClip() === vrmaAnimationClip) {
-						currentAction.paused = false;
-						setStatus('Playback resumed.', '再生を再開しました。');
-						return;
-					}
-
-					try {
-						console.log('Playing animation...');
-
-						const oldAction = currentAction;
-						const mixer = currentMixer;
-
-						const newAction = mixer.clipAction(vrmaAnimationClip);
-						newAction.setLoop(THREE.LoopRepeat);
-						newAction.clampWhenFinished = true;
-						newAction.reset();
-
-						if (oldAction) {
-							newAction.crossFadeFrom(oldAction, CROSSFADE_DURATION, false);
-							newAction.play();
-
-							const oldClip = oldAction.getClip();
-							setTimeout(() => {
-								if (currentMixer === mixer && (!currentAction || currentAction.getClip() !== oldClip)) {
-									mixer.uncacheClip(oldClip);
-								}
-							}, CROSSFADE_DURATION * 1000 + 100);
-						} else {
-							newAction.play();
-						}
-
-						currentAction = newAction;
-						setStatus('Playing animation.', 'アニメーション再生中。');
-						console.log('Animation started successfully.');
-					} catch (error) {
-						console.error('Error playing animation:', error);
-						setStatus('Error playing animation', 'アニメーション再生エラー');
-					}
-				}
-			}
-
-			function pauseAnimation() {
-				if (currentAction) {
-					currentAction.paused = !currentAction.paused;
-					setStatus(currentAction.paused ? 'Playback paused.' : 'Playback resumed.', currentAction.paused ? '一時停止中。' : '再生を再開しました。');
-				}
-			}
-
-			function stopAnimation() {
-				if (currentAction) {
-					currentAction.stop();
-					currentAction = undefined;
-					currentMixer.stopAllAction();
-
-					if (currentVrm) {
-						currentVrm.humanoid.resetNormalizedPose();
-						currentVrm.humanoid.resetRawPose();
-						currentVrm.expressionManager?.resetValues();
-						currentVrm.lookAt?.reset();
-						if (activeTab === 'pose') syncAllSliders();
-						if (activeTab === 'face') syncFaceUI();
-					}
-					setStatus('Animation stopped.', 'アニメーションを停止しました。');
-				}
-			}
-
-			// --- UI and Event Handlers ---
-			function updateButtons() {
-				const hasVrm = currentVrm !== undefined;
-				const hasVrma = vrmaAnimationClip !== undefined;
-
-				vrmaButtonsContainer.querySelectorAll('.vrma-btn').forEach(btn => {
-					btn.disabled = !hasVrm;
-				});
-
-				playBtn.disabled = !(hasVrm && hasVrma);
-				pauseBtn.disabled = !(hasVrm && hasVrma);
-				stopBtn.disabled = !(hasVrm && hasVrma);
-			}
-
-			let vrmaLoadToken = 0;
-
-			async function selectAnimation(url) {
-				const token = ++vrmaLoadToken;
-				vrmaAnimationClip = undefined;
-				updateButtons();
-
-				try {
-					const clip = await loadVRMA(url);
-					if (token !== vrmaLoadToken) return;
-
-					vrmaAnimationClip = clip;
-
-					if (currentAction) {
-						playAnimation();
-					}
-				} catch (error) {
-					console.error('Error selecting animation:', error);
-				} finally {
-					if (token === vrmaLoadToken) updateButtons();
-				}
-			}
-
-			VRMA_ANIMATIONS.forEach(({ name, url }) => addVrmaButton(name, url));
-
-			playBtn.addEventListener('click', playAnimation);
-			pauseBtn.addEventListener('click', pauseAnimation);
-			stopBtn.addEventListener('click', stopAnimation);
-
-			async function handleFiles(fileList) {
-				for (const file of fileList) {
-					const lower = file.name.toLowerCase();
-
-					if (lower.endsWith('.vrm')) {
-						const url = trackObjectUrl(URL.createObjectURL(file));
-						await loadVRM(url, file.name);
-						updateButtons();
-					} else if (lower.endsWith('.vrma')) {
-						const url = trackObjectUrl(URL.createObjectURL(file));
-						addVrmaButton(file.name.replace(/\.vrma$/i, ''), url);
-						updateButtons();
-						if (currentVrm) {
-							await selectAnimation(url);
-						}
-					} else {
-						setStatus('Unsupported file format.', '非対応のファイル形式です。');
-					}
-				}
-			}
-
-			openFileBtn.addEventListener('click', () => filePicker.click());
-			filePicker.addEventListener('change', async (e) => {
-				await handleFiles(e.target.files);
-				filePicker.value = '';
-			});
-
-			window.addEventListener('dragover', (e) => {
-				e.preventDefault();
-			});
-			window.addEventListener('drop', async (e) => {
-				e.preventDefault();
-				await handleFiles(e.dataTransfer.files);
-			});
-
-			panelToggleBtn.addEventListener('click', () => {
-				const isHidden = controlsPanel.hasAttribute('hidden');
-				if (isHidden) {
-					controlsPanel.removeAttribute('hidden');
-					document.getElementById('infoPanel').classList.remove('hidden');
-					panelToggleBtn.setAttribute('aria-expanded', 'true');
-				} else {
-					controlsPanel.setAttribute('hidden', '');
-					document.getElementById('infoPanel').classList.add('hidden');
-					panelToggleBtn.setAttribute('aria-expanded', 'false');
-				}
-			});
-
-			window.addEventListener('resize', () => {
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-				renderer.setSize(window.innerWidth, window.innerHeight);
-			});
-
-			// --- Helpers ---
-			const gridHelper = new THREE.GridHelper( 10, 10 );
-			scene.add( gridHelper );
-
-			const axesHelper = new THREE.AxesHelper( 5 );
-			scene.add( axesHelper );
-
-			// =====================================================================
-			// --- Pose Editing: bone metadata, sliders, viewport handles, gizmo ---
-			// =====================================================================
-
-			// POSE_BONE_GROUPS, HANDLE_BONES, BONE_AXIS_LIMITS, getBoneCategory, getBoneLimits
-			// are now imported from src/boneConfig.js (see module imports above).
-
-			let isEditMode = false;
-			let activeTab = 'animation';
-			let selectedBoneName = null;
-			const sliderRefs = new Map();
-			const handleByBone = new Map();
-
-			const boneHandlesGroup = new THREE.Group();
-			boneHandlesGroup.visible = false;
-			scene.add(boneHandlesGroup);
-
-			const HANDLE_GEOMETRY = new THREE.SphereGeometry(0.02, 12, 8);
-			const HANDLE_COLOR_DEFAULT = 0x6a82fb;
-			const HANDLE_COLOR_SELECTED = 0xfc5c7d;
-
-			function createBoneHandle(boneName) {
-				const material = new THREE.MeshBasicMaterial({
-					color: HANDLE_COLOR_DEFAULT,
-					transparent: true,
-					opacity: 0.35,
-					depthTest: false,
-				});
-				const mesh = new THREE.Mesh(HANDLE_GEOMETRY, material);
-				mesh.renderOrder = 999;
-				mesh.userData.boneName = boneName;
-				boneHandlesGroup.add(mesh);
-				handleByBone.set(boneName, mesh);
-			}
-
-			function disposeBoneHandles() {
-				handleByBone.forEach((mesh) => {
-					boneHandlesGroup.remove(mesh);
-					mesh.material.dispose();
-				});
-				handleByBone.clear();
-			}
-
-			function updateBoneHandles() {
-				if (!currentVrm) return;
-				handleByBone.forEach((mesh, boneName) => {
-					const node = currentVrm.humanoid.getRawBoneNode(boneName);
-					if (node) node.getWorldPosition(mesh.position);
-				});
-			}
-
-			function buildBoneRow(boneName) {
-				const limits = getBoneLimits(boneName);
-				const row = document.createElement('div');
-				row.className = 'bone-row';
-				row.dataset.bone = boneName;
-
-				const label = document.createElement('span');
-				label.className = 'bone-label';
-				label.textContent = boneName;
-				label.title = boneName;
-				row.appendChild(label);
-
-				const inputs = {};
-				const readouts = {};
-				['x', 'y', 'z'].forEach((axis) => {
-					const wrap = document.createElement('span');
-					wrap.className = 'bone-axis-wrap';
-
-					const input = document.createElement('input');
-					input.type = 'range';
-					input.className = `axis-${axis}`;
-					input.min = limits[axis][0];
-					input.max = limits[axis][1];
-					input.step = 1;
-					input.value = 0;
-					input.dataset.bone = boneName;
-					input.dataset.axis = axis;
-
-					const readout = document.createElement('span');
-					readout.className = 'bone-readout';
-					readout.textContent = '0°';
-
-					wrap.appendChild(input);
-					wrap.appendChild(readout);
-					row.appendChild(wrap);
-
-					inputs[axis] = input;
-					readouts[axis] = readout;
-				});
-
-				sliderRefs.set(boneName, { row, inputs, readouts });
-				return row;
-			}
-
-			function buildPoseUI() {
-				poseSlidersContainer.innerHTML = '';
-				poseSlidersDetailContainer.innerHTML = '';
-				sliderRefs.clear();
-				disposeBoneHandles();
-				selectedBoneName = null;
-
-				if (!currentVrm) {
-					poseSlidersContainer.innerHTML = '<div class="pose-placeholder"><span class="lang-en">Load a VRM model to see the list of bones.</span><span class="lang-ja">VRMモデルを読み込むとボーン一覧が表示されます。</span></div>';
-					return;
-				}
-
-				POSE_BONE_GROUPS.forEach((group) => {
-					const presentBones = group.bones.filter((name) => currentVrm.humanoid.getNormalizedBoneNode(name));
-					if (presentBones.length === 0) return;
-
-					const targetContainer = group.detail ? poseSlidersDetailContainer : poseSlidersContainer;
-
-					const heading = document.createElement('h4');
-					heading.className = 'bone-group-title';
-					heading.textContent = group.label;
-					targetContainer.appendChild(heading);
-
-					presentBones.forEach((boneName) => {
-						targetContainer.appendChild(buildBoneRow(boneName));
-						if (HANDLE_BONES.includes(boneName)) {
-							createBoneHandle(boneName);
-						}
-					});
-				});
-			}
-
-			function syncSlidersFromBone(boneName) {
-				const refs = sliderRefs.get(boneName);
-				if (!refs || !currentVrm) return;
-				const node = currentVrm.humanoid.getNormalizedBoneNode(boneName);
-				if (!node) return;
-				['x', 'y', 'z'].forEach((axis) => {
-					const deg = THREE.MathUtils.radToDeg(node.rotation[axis]);
-					refs.inputs[axis].value = deg;
-					refs.readouts[axis].textContent = `${Math.round(deg)}°`;
-				});
-			}
-
-			function syncAllSliders() {
-				sliderRefs.forEach((_refs, boneName) => syncSlidersFromBone(boneName));
-			}
-
-			posePanel.addEventListener('input', (e) => {
-				const input = e.target;
-				if (!input.matches('input[type="range"][data-bone]')) return;
-				if (!currentVrm) return;
-
-				const boneName = input.dataset.bone;
-				const axis = input.dataset.axis;
-				const node = currentVrm.humanoid.getNormalizedBoneNode(boneName);
-				if (!node) return;
-
-				const deg = parseFloat(input.value);
-				node.rotation[axis] = THREE.MathUtils.degToRad(deg);
-
-				const refs = sliderRefs.get(boneName);
-				if (refs) refs.readouts[axis].textContent = `${Math.round(deg)}°`;
-			});
-
-			const poseModeSelect = document.getElementById('poseModeSelect');
-
-			function applyPoseReset() {
-				if (!currentVrm) return;
-				currentVrm.humanoid.resetNormalizedPose();
-				
-				if (poseModeSelect && poseModeSelect.value === 'rigidT') {
-					if (proceduralIdleToggle) proceduralIdleToggle.checked = false;
-				} else {
-					if (proceduralIdleToggle) proceduralIdleToggle.checked = true;
-				}
-				
-				syncAllSliders();
-			}
-
-			resetPoseBtn.addEventListener('click', applyPoseReset);
-			if (poseModeSelect) {
-				poseModeSelect.addEventListener('change', applyPoseReset);
-			}
-
-			// --- Viewport gizmo (TransformControls), attached to the selected bone ---
-			const transformControls = new TransformControls(camera, renderer.domElement);
-			transformControls.setMode('rotate');
-			transformControls.setSpace('local');
-			transformControls.setSize(0.4);
-			scene.add(transformControls.getHelper());
-
-			transformControls.addEventListener('dragging-changed', (e) => {
-				controls.enabled = !e.value;
-			});
-			transformControls.addEventListener('objectChange', () => {
-				if (selectedBoneName) syncSlidersFromBone(selectedBoneName);
-			});
-
-			function selectBone(boneName) {
-				if (!currentVrm) return;
-				const node = currentVrm.humanoid.getNormalizedBoneNode(boneName);
-				if (!node) return;
-
-				if (selectedBoneName && selectedBoneName !== boneName) {
-					const prevHandle = handleByBone.get(selectedBoneName);
-					if (prevHandle) prevHandle.material.color.set(HANDLE_COLOR_DEFAULT);
-					const prevRefs = sliderRefs.get(selectedBoneName);
-					if (prevRefs) prevRefs.row.classList.remove('selected');
-				}
-
-				selectedBoneName = boneName;
-				transformControls.attach(node);
-
-				const handle = handleByBone.get(boneName);
-				if (handle) handle.material.color.set(HANDLE_COLOR_SELECTED);
-
-				const refs = sliderRefs.get(boneName);
-				if (refs) {
-					refs.row.classList.add('selected');
-					refs.row.scrollIntoView({ block: 'nearest' });
-				}
-			}
-
-			function deselectBone() {
-				if (selectedBoneName) {
-					const handle = handleByBone.get(selectedBoneName);
-					if (handle) handle.material.color.set(HANDLE_COLOR_DEFAULT);
-					const refs = sliderRefs.get(selectedBoneName);
-					if (refs) refs.row.classList.remove('selected');
-				}
-				selectedBoneName = null;
-				transformControls.detach();
-			}
-
-			const raycaster = new THREE.Raycaster();
-			const pointerNDC = new THREE.Vector2();
-			let pointerDownPos = null;
-
-			renderer.domElement.addEventListener('pointerdown', (e) => {
-				pointerDownPos = { x: e.clientX, y: e.clientY };
-			});
-
-			renderer.domElement.addEventListener('pointerup', (e) => {
-				const downPos = pointerDownPos;
-				pointerDownPos = null;
-				if (activeTab !== 'pose' || !handlesToggle.checked) return;
-				if (transformControls.dragging || transformControls.axis) return;
-				if (!downPos) return;
-
-				const dx = e.clientX - downPos.x;
-				const dy = e.clientY - downPos.y;
-				if (Math.hypot(dx, dy) > 5) return;
-
-				pointerNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
-				pointerNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
-				raycaster.setFromCamera(pointerNDC, camera);
-				const hits = raycaster.intersectObjects(boneHandlesGroup.children, false);
-
-				if (hits.length > 0) {
-					selectBone(hits[0].object.userData.boneName);
-				} else {
-					deselectBone();
-				}
-			});
-
-			handlesToggle.addEventListener('change', () => {
-				if (activeTab !== 'pose') return;
-				boneHandlesGroup.visible = handlesToggle.checked;
-				if (!handlesToggle.checked) deselectBone();
-			});
-
-			// =====================================================================
-			// --- Face Editing: expression sliders, look-at (gaze) control ---
-			// =====================================================================
-
-			const FACE_PRESET_GROUPS = [
-				{
-					label: 'Emotions', names: [
-						VRMExpressionPresetName.Happy, VRMExpressionPresetName.Angry, VRMExpressionPresetName.Sad,
-						VRMExpressionPresetName.Relaxed, VRMExpressionPresetName.Surprised, VRMExpressionPresetName.Neutral,
-					],
-				},
-				{
-					label: 'Mouth (visemes)', names: [
-						VRMExpressionPresetName.Aa, VRMExpressionPresetName.Ih, VRMExpressionPresetName.Ou,
-						VRMExpressionPresetName.Ee, VRMExpressionPresetName.Oh,
-					],
-				},
-				{
-					label: 'Blink', names: [
-						VRMExpressionPresetName.Blink, VRMExpressionPresetName.BlinkLeft, VRMExpressionPresetName.BlinkRight,
-					],
-				},
-				{
-					label: 'Gaze (expression-based)', names: [
-						VRMExpressionPresetName.LookUp, VRMExpressionPresetName.LookDown,
-						VRMExpressionPresetName.LookLeft, VRMExpressionPresetName.LookRight,
-					],
-				},
-			];
-
-			const expressionSliderRefs = new Map();
-			let lookAtRefs = null;
-
-			function buildExpressionRow(name) {
-				const row = document.createElement('div');
-				row.className = 'face-row';
-				row.dataset.expression = name;
-
-				const label = document.createElement('span');
-				label.className = 'bone-label';
-				label.textContent = name;
-				label.title = name;
-				row.appendChild(label);
-
-				const input = document.createElement('input');
-				input.type = 'range';
-				input.min = 0;
-				input.max = 1;
-				input.step = 0.01;
-				input.value = 0;
-				input.dataset.expression = name;
-				row.appendChild(input);
-
-				const readout = document.createElement('span');
-				readout.className = 'bone-readout';
-				readout.textContent = '0.00';
-				row.appendChild(readout);
-
-				expressionSliderRefs.set(name, { row, input, readout });
-				return row;
-			}
-
-			function buildLookAtRow(axis, labelEn, labelJa) {
-				const row = document.createElement('div');
-				row.className = 'face-row';
-
-				const labelSpan = document.createElement('span');
-				labelSpan.className = 'bone-label';
-				labelSpan.innerHTML = `<span class="lang-en">${labelEn}</span><span class="lang-ja">${labelJa}</span>`;
-				row.appendChild(labelSpan);
-
-				const input = document.createElement('input');
-				input.type = 'range';
-				input.className = 'lookat-slider';
-				input.min = -90;
-				input.max = 90;
-				input.step = 1;
-				input.value = 0;
-				input.dataset.lookat = axis;
-				row.appendChild(input);
-
-				const readout = document.createElement('span');
-				readout.className = 'bone-readout';
-				readout.textContent = '0°';
-				row.appendChild(readout);
-
-				return { row, input, readout };
-			}
-
-			function buildFaceUI() {
-				expressionSlidersContainer.innerHTML = '';
-				expressionSliderRefs.clear();
-				lookAtSlidersContainer.innerHTML = '';
-				lookAtRefs = null;
-
-				if (!currentVrm) {
-					expressionSlidersContainer.innerHTML = '<div class="pose-placeholder"><span class="lang-en">Load a VRM model to see the list of expressions.</span><span class="lang-ja">VRMモデルを読み込むと表情一覧が表示されます。</span></div>';
-					followMouseToggle.disabled = true;
-					followMouseToggle.checked = false;
-					return;
-				}
-
-				const expressionManager = currentVrm.expressionManager;
-				if (!expressionManager || expressionManager.expressions.length === 0) {
-					expressionSlidersContainer.innerHTML = '<div class="pose-placeholder"><span class="lang-en">This model has no expressions defined.</span><span class="lang-ja">このモデルには定義された表情がありません。</span></div>';
-				} else {
-					const presetMap = expressionManager.presetExpressionMap;
-					const customMap = expressionManager.customExpressionMap;
-
-					FACE_PRESET_GROUPS.forEach((group) => {
-						const presentNames = group.names.filter((name) => presetMap[name]);
-						if (presentNames.length === 0) return;
-
-						const heading = document.createElement('h4');
-						heading.className = 'bone-group-title';
-						heading.textContent = group.label;
-						expressionSlidersContainer.appendChild(heading);
-
-						presentNames.forEach((name) => {
-							expressionSlidersContainer.appendChild(buildExpressionRow(name));
-						});
-					});
-
-					const customNames = Object.keys(customMap).sort();
-					if (customNames.length > 0) {
-						const heading = document.createElement('h4');
-						heading.className = 'bone-group-title';
-						heading.textContent = 'Custom';
-						expressionSlidersContainer.appendChild(heading);
-
-						customNames.forEach((name) => {
-							expressionSlidersContainer.appendChild(buildExpressionRow(name));
-						});
-					}
-				}
-
-				const hasLookAt = !!currentVrm.lookAt;
-				const yawRow = buildLookAtRow('yaw', 'Yaw (Left/Right)', 'Yaw (左右)');
-				const pitchRow = buildLookAtRow('pitch', 'Pitch (Up/Down)', 'Pitch (上下)');
-				lookAtSlidersContainer.appendChild(yawRow.row);
-				lookAtSlidersContainer.appendChild(pitchRow.row);
-				lookAtRefs = { yaw: yawRow, pitch: pitchRow };
-
-				yawRow.input.disabled = !hasLookAt;
-				pitchRow.input.disabled = !hasLookAt;
-				followMouseToggle.disabled = !hasLookAt;
-				if (!hasLookAt) followMouseToggle.checked = false;
-			}
-
-			function syncExpressionSliders() {
-				if (!currentVrm || !currentVrm.expressionManager) return;
-				expressionSliderRefs.forEach((refs, name) => {
-					const weight = currentVrm.expressionManager.getValue(name) ?? 0;
-					refs.input.value = weight;
-					refs.readout.textContent = weight.toFixed(2);
-				});
-			}
-
-			function syncLookAtSliders() {
-				if (!lookAtRefs || !currentVrm || !currentVrm.lookAt) return;
-				const { yaw, pitch } = currentVrm.lookAt;
-				lookAtRefs.yaw.input.value = yaw;
-				lookAtRefs.yaw.readout.textContent = `${Math.round(yaw)}°`;
-				lookAtRefs.pitch.input.value = pitch;
-				lookAtRefs.pitch.readout.textContent = `${Math.round(pitch)}°`;
-			}
-
-			function applyFollowMouseSliderState() {
-				if (!lookAtRefs) return;
-				const hasLookAt = !!(currentVrm && currentVrm.lookAt);
-				const following = followMouseToggle.checked && !followMouseToggle.disabled;
-				lookAtRefs.yaw.input.disabled = !hasLookAt || following;
-				lookAtRefs.pitch.input.disabled = !hasLookAt || following;
-			}
-
-			function syncFaceUI() {
-				syncExpressionSliders();
-				syncLookAtSliders();
-				applyFollowMouseSliderState();
-			}
-
-			facePanel.addEventListener('input', (e) => {
-				const input = e.target;
-				if (!currentVrm) return;
-
-				if (input.matches('input[type="range"][data-expression]')) {
-					const name = input.dataset.expression;
-					const weight = parseFloat(input.value);
-					currentVrm.expressionManager?.setValue(name, weight);
-					const refs = expressionSliderRefs.get(name);
-					if (refs) refs.readout.textContent = weight.toFixed(2);
-				} else if (input.matches('input[type="range"][data-lookat]') && currentVrm.lookAt) {
-					const axis = input.dataset.lookat;
-					const deg = parseFloat(input.value);
-					currentVrm.lookAt[axis] = deg;
-					if (lookAtRefs) lookAtRefs[axis].readout.textContent = `${Math.round(deg)}°`;
-				}
-			});
-
-			resetFaceBtn.addEventListener('click', () => {
-				if (!currentVrm) return;
-				currentVrm.expressionManager?.resetValues();
-				currentVrm.lookAt?.reset();
-				if (followMouseToggle.checked) {
-					followMouseToggle.checked = false;
-					if (currentVrm.lookAt) currentVrm.lookAt.target = null;
-				}
-				syncFaceUI();
-			});
-
-			const lookAtTarget = new THREE.Object3D();
-			camera.add(lookAtTarget);
-
-			window.addEventListener('pointermove', (e) => {
-				lookAtTarget.position.set(
-					10 * ((e.clientX - 0.5 * window.innerWidth) / window.innerHeight),
-					-10 * ((e.clientY - 0.5 * window.innerHeight) / window.innerHeight),
-					0
-				);
-			});
-
-			followMouseToggle.addEventListener('change', () => {
-				if (!currentVrm || !currentVrm.lookAt) return;
-				if (followMouseToggle.checked) {
-					currentVrm.lookAt.target = lookAtTarget;
-				} else {
-					currentVrm.lookAt.target = null;
-					syncLookAtSliders();
-				}
-				applyFollowMouseSliderState();
-			});
-
-			// =====================================================================
-			// --- Edit-mode lifecycle: entering/leaving the Pose and Face tabs ---
-			// =====================================================================
-
-			function freezeAnimationForEditing() {
-				if (!currentVrm || !currentAction) return;
-
-				const capturedPose = new Map();
-				sliderRefs.forEach((_refs, boneName) => {
-					const node = currentVrm.humanoid.getNormalizedBoneNode(boneName);
-					if (node) capturedPose.set(boneName, node.quaternion.clone());
-				});
-
-				const capturedExpressions = new Map();
-				currentVrm.expressionManager?.expressions.forEach((expression) => {
-					capturedExpressions.set(expression.expressionName, expression.weight);
-				});
-
-				const capturedLookAt = currentVrm.lookAt
-					? { yaw: currentVrm.lookAt.yaw, pitch: currentVrm.lookAt.pitch }
-					: null;
-
-				currentAction.stop();
-				currentMixer.stopAllAction();
-				currentAction = undefined;
-
-				capturedPose.forEach((quat, boneName) => {
-					const node = currentVrm.humanoid.getNormalizedBoneNode(boneName);
-					if (node) node.quaternion.copy(quat);
-				});
-				capturedExpressions.forEach((weight, name) => {
-					currentVrm.expressionManager?.setValue(name, weight);
-				});
-				if (capturedLookAt && currentVrm.lookAt) {
-					currentVrm.lookAt.yaw = capturedLookAt.yaw;
-					currentVrm.lookAt.pitch = capturedLookAt.pitch;
-				}
-			}
-
-			const tabFeaturesBtn = document.getElementById('tabFeaturesBtn');
-			const featuresPanel = document.getElementById('featuresPanel');
-
-			function setActiveTab(tabName) {
-				const wasTab = activeTab;
-				activeTab = tabName;
-				isEditMode = tabName === 'pose' || tabName === 'face';
-
-				tabAnimationBtn.classList.toggle('active', tabName === 'animation');
-				tabPoseBtn.classList.toggle('active', tabName === 'pose');
-				tabFaceBtn.classList.toggle('active', tabName === 'face');
-				if (tabFeaturesBtn) tabFeaturesBtn.classList.toggle('active', tabName === 'features');
-
-				animationPanel.hidden = tabName !== 'animation';
-				posePanel.hidden = tabName !== 'pose';
-				facePanel.hidden = tabName !== 'face';
-				if (featuresPanel) featuresPanel.hidden = tabName !== 'features';
-
-				if (isEditMode) {
-					freezeAnimationForEditing();
-				}
-
-				if (wasTab === 'pose' && tabName !== 'pose') {
-					deselectBone();
-					boneHandlesGroup.visible = false;
-				}
-				if (tabName === 'pose') {
-					if (currentVrm) syncAllSliders();
-					boneHandlesGroup.visible = handlesToggle.checked;
-				}
-				if (tabName === 'face') {
-					syncFaceUI();
-				}
-			}
-
-			tabAnimationBtn.addEventListener('click', () => setActiveTab('animation'));
-			tabPoseBtn.addEventListener('click', () => setActiveTab('pose'));
-			tabFaceBtn.addEventListener('click', () => setActiveTab('face'));
-			if (tabFeaturesBtn) tabFeaturesBtn.addEventListener('click', () => setActiveTab('features'));
-
-			buildPoseUI();
-			buildFaceUI();
-
-			// --- Keyboard Shortcuts ---
-			initHotkeys();
-			registerHotkey(' ', () => { if (!playBtn.disabled) { currentAction?.paused ? playAnimation() : pauseAnimation(); } });
-			registerHotkey('s', stopAnimation);
-			registerHotkey('r', () => { if (currentVrm) applyPoseReset(); });
-			registerHotkey('l', () => { const n = document.documentElement.lang === 'ja' ? 'en' : 'ja'; document.documentElement.lang = n; sessionStorage.setItem('langSet', n); savePrefs({ lang: n }); });
-			registerHotkey('h', () => panelToggleBtn.click());
-			registerHotkey('1', () => setActiveTab('animation'));
-			registerHotkey('2', () => setActiveTab('features'));
-			registerHotkey('3', () => setActiveTab('pose'));
-			registerHotkey('4', () => setActiveTab('face'));
-
-			// Light logic
-			const dirLightSlider = document.getElementById('dirLightSlider');
-			const ambLightSlider = document.getElementById('ambLightSlider');
-			const dirLightVal = document.getElementById('dirLightVal');
-			const ambLightVal = document.getElementById('ambLightVal');
-
-			// --- Restore persisted settings ---
-			{
-				const prefs = loadPrefs();
-				// Language (overrides auto-detect from the inline <script> if user previously chose)
-				if (prefs.lang) document.documentElement.lang = prefs.lang;
-				// Lighting
-				if (dirLightSlider) {
-					dirLightSlider.value = prefs.dirLight;
-					light.intensity = prefs.dirLight;
-					if (dirLightVal) dirLightVal.textContent = prefs.dirLight.toFixed(1);
-				}
-				if (ambLightSlider) {
-					ambLightSlider.value = prefs.ambLight;
-					ambientLight.intensity = prefs.ambLight;
-					if (ambLightVal) ambLightVal.textContent = prefs.ambLight.toFixed(1);
-				}
-				// Pose mode
-				const poseModeEl = document.getElementById('poseModeSelect');
-				if (poseModeEl && prefs.poseMode) poseModeEl.value = prefs.poseMode;
-				// Feature toggles
-				const proceduralEl = document.getElementById('proceduralIdleToggle');
-				if (proceduralEl) proceduralEl.checked = prefs.standbyMotion;
-				const blinkEl = document.getElementById('blinkToggle');
-				if (blinkEl) blinkEl.checked = prefs.autoBlink;
-			}
-
-			dirLightSlider.addEventListener('input', (e) => {
-				const val = parseFloat(e.target.value);
-				light.intensity = val;
-				dirLightVal.textContent = val.toFixed(1);
-				savePrefs({ dirLight: val });
-			});
-			ambLightSlider.addEventListener('input', (e) => {
-				const val = parseFloat(e.target.value);
-				ambientLight.intensity = val;
-				ambLightVal.textContent = val.toFixed(1);
-				savePrefs({ ambLight: val });
-			});
-
-			// Persist pose mode and feature toggles
-			document.getElementById('poseModeSelect')?.addEventListener('change', (e) => savePrefs({ poseMode: e.target.value }));
-			document.getElementById('proceduralIdleToggle')?.addEventListener('change', (e) => savePrefs({ standbyMotion: e.target.checked }));
-			document.getElementById('blinkToggle')?.addEventListener('change', (e) => savePrefs({ autoBlink: e.target.checked }));
-
-			// --- Advanced Procedural Human Standing Simulator ---
-			const proceduralIdleToggle = document.getElementById('proceduralIdleToggle');
-			const proceduralIntensitySlider = document.getElementById('proceduralIntensitySlider');
-			const proceduralIntensityVal = document.getElementById('proceduralIntensityVal');
-			const eyeSaccadesToggle = document.getElementById('eyeSaccadesToggle');
-			const blinkToggle = document.getElementById('blinkToggle');
-
-			if (proceduralIntensitySlider) {
-				proceduralIntensitySlider.addEventListener('input', (e) => {
-					if (proceduralIntensityVal) proceduralIntensityVal.textContent = parseFloat(e.target.value).toFixed(1);
-				});
-			}
-
-			let saccadeTargetYaw = 0;
-			let saccadeTargetPitch = 0;
-			let saccadeCurrentYaw = 0;
-			let saccadeCurrentPitch = 0;
-			let lastSaccadeTime = 0;
-			let nextSaccadeInterval = 2.5;
-			let lastBlinkTime = 0;
-			let nextBlinkInterval = 3;
-
-			function updateStandbyAndBlink(deltaTime, time) {
-				if (!currentVrm) return;
-
-				const intensity = proceduralIntensitySlider ? parseFloat(proceduralIntensitySlider.value) : 1.0;
-
-				// 1. Procedural Human Standing Motion (Breathing, Postural Sway, Weight Shift)
-				const isProceduralActive = (proceduralIdleToggle ? proceduralIdleToggle.checked : true) && (poseModeSelect ? poseModeSelect.value !== 'rigidT' : true);
-				
-				if (isProceduralActive && !currentAction) {
-					const humanoid = currentVrm.humanoid;
+		</header>
+		<!-- 
+			MARK: Sidebar model tab
+		-->
+		<div class="tab" id="tab-model">
+			<details open><summary data-locale="app.sidebar.model-tab.body">Body</summary>
+				<div class="setting top bottom switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.model-tab.body.animation">Animation</span>
+					<select name="animation-select" id="animation-select"></select>
+				</div>
+				<div class="setting bottom top switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.model-tab.body.reset-pose">Reset pose</span>
+					<button class='text-button' id="stop-btn" disabled data-locale="app.sidebar.model-tab.body.reset-pose.reset">Reset</button>
+				</div>
+			</details>
+			<details open><summary data-locale="app.sidebar.model-tab.face">Face</summary>
+				<div class="setting top switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.model-tab.face.look-at-camera">Look at camera</span>
+					<label class="switch">
+						<input type="checkbox" id="look-follow-camera" />
+						<span class="slider"></span>
+					</label>
+				</div>
+				<div class="setting switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.model-tab.face.head-follows-camera">Head follows camera</span>
+					<label class="switch">
+						<input type="checkbox" id="followHeadChk" />
+						<span class="slider"></span>
+					</label>
+				</div>
+				<div class="setting switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.model-tab.face.blink">Blink</span>
+					<label class="switch">
+						<input type="checkbox" id="blink-chk" />
+						<span class="slider"></span>
+					</label>
+				</div>
+				<div class="setting bottom">
+					<div id="look_joystick" class="joystick-container" style="touch-action:none;">
+						<div id="look_joystick_handle" class="joystick-handle"></div>
+					</div>
+					<div style="font-size:0.85em;opacity: 0.5;" data-locale="app.sidebar.model-tab.face.joystick-hint">Drag inside the box to aim eyes.</div>
+				</div>
+				<div class="setting top bottom switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.model-tab.face.recenter-eyes">Recenter eyes</span>
+					<button class='text-button' id="reset-look-btn" data-locale="app.sidebar.model-tab.face.recenter-eyes.recenter">Recenter</button>
+				</div>
+				<div id="blend-shape-ranges">
+
+				</div>
+				<div class="setting top bottom switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.model-tab.face.clear-expressions">Clear all expressions</span>
+					<button class='text-button' id="reset-expression-btn" data-locale="app.sidebar.model-tab.face.clear-expressions.reset">Reset</button>
+				</div>
+			</details>
+			<details open><summary data-locale="app.sidebar.model-tab.materials">Materials</summary>
+				<div id="materials-list">
 					
-					// Breathing dynamics (~1.8 Hz / ~17 breaths per minute)
-					const breathPhase = Math.sin(time * 1.8);
-					const breathPhaseDelayed = Math.sin(time * 1.8 - 0.4);
+				</div>
+			</details>
+		</div>
+		<!-- 
+			MARK: Sidebar scene tab
+		-->
+		<div class="tab" id="tab-scene">
+			<details open><summary data-locale="app.sidebar.scene-tab.light">Light</summary>
+				<div class="setting top switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.scene-tab.light.position-x">Position X</span>
+					<input type="range" id="light-pos-x" min="-5" max="5" step="0.5" value="1.0">
+				</div>
+				<div class="setting switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.scene-tab.light.position-y">Position Y</span>
+					<input type="range" id="light-pos-y" min="-5" max="5" step="0.5" value="1.0">
+				</div>
+				<div class="setting bottom switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.scene-tab.light.position-z">Position Z</span>
+					<input type="range" id="light-pos-z" min="-5" max="5" step="0.5" value="1.0">
+				</div>
+				<div class="setting top switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.scene-tab.light.brightness">Brightness</span>
+					<input type="range" id="light-intensity" min="0" max="6" step="0.5" value="3">
+				</div>
+				<div class="setting bottom switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.scene-tab.light.color">Color</span>
+					<input type="color" id="light-color" value="#ffffff">
+				</div>
+				<div class="setting bottom top switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.scene-tab.light.reset-light">Reset light</span>
+					<button class='text-button' id="reset-light-btn" data-locale="app.sidebar.scene-tab.light.reset-light.reset">Reset</button>
+				</div>
+			</details>
+			<details open><summary data-locale="app.sidebar.scene-tab.background">Background</summary>
+				<div class="setting bottom top switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.scene-tab.background.color">Color</span>
+					<input type="color" id="background-color" value="#222222">
+				</div>
+				<div class="setting top">
+					<div id="skybox-buttons">
+						<button class='icon-button custom-skybox-button' id="set-background-image-btn">upload</button>
+					</div>
+				</div>
+				<div class="setting switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.scene-tab.background.skybox-blur">Skybox blur</span>
+					<input type="range" id="skybox-blur-range" min="0" max="1" step="0.05" value="0">
+				</div>
+				<div class="setting bottom switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.scene-tab.background.skybox-position">Skybox position</span>
+					<input type="range" id="skybox-rotation-range" min="0" max="360" step="1" value="180">
+				</div>
+				<div class="setting top bottom switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.scene-tab.background.light-color-as-background-average">Light color as background average</span>
+					<button class='text-button' id="setLightAsBgAvgBtn" data-locale="app.sidebar.scene-tab.background.light-color-as-background-average.set-color">Set Color</button>
+				</div>
+			</details>
+			
+		</div>
+		<!-- 
+			MARK: Sidebar render tab
+		-->
+		<div class="tab" id="tab-render">
+			<details open><summary data-locale="app.sidebar.scene-tab.camera">Camera</summary>
+				<div class="setting top switch-wrapper">
+					<span class="switch-text" data-locale="app.sidebar.render-tab.camera.fov">Field of view</span>
+					<input type="range" id="fov-range" min="5" max="120" step="5" value="30">
+				</div>
+				<div class="setting bottom switch-wrapper">
+					<span class="switch-text">Camera moving</span>
+					<select id="camera-mode">
+						<option value="orbital">Orbital</option>
+						<option value="positional">Positional</option>
+					</select>
+				</div>
+			</details>
+			<div class="setting top bottom switch-wrapper">
+				<span class="switch-text" data-locale="app.sidebar.render-tab.view-mode">View mode</span>
+				<select name="render-materials" id="render-materials">
+					<option value="render-materials-mtoon" data-locale="app.sidebar.render-tab.view-mode.vrm-mtoon">VRM MToon</option>
+					<option value="render-materials-texture" data-locale="app.sidebar.render-tab.view-mode.texture">Texture</option>
+					<option value="render-materials-solid" data-locale="app.sidebar.render-tab.view-mode.solid">Solid</option>
+					<option value="render-materials-wireframe" data-locale="app.sidebar.render-tab.view-mode.wireframe">Wireframe</option>
+					<option value="render-materials-face-orientation" data-locale="app.sidebar.render-tab.view-mode.face-orientation">Face orientation</option>
+				</select>
+			</div>
+		</div>
+		<div class="tab-control">
+			<button class="tab-button" id="tab-btn-tab-model">
+				<span class="tab-icon" translate="no">accessibility</span>
+				<span class="tab-label" data-locale="app.sidebar.tab-control.model">Model</span>
+			</button>
+			<button class="tab-button" id="tab-btn-tab-scene">
+				<span class="tab-icon" translate="no">landscape</span>
+				<span class="tab-label" data-locale="app.sidebar.tab-control.scene">Scene</span>
+			</button>
+			<button class="tab-button" id="tab-btn-tab-render">
+				<span class="tab-icon" translate="no">photo_camera</span>
+				<span class="tab-label" data-locale="app.sidebar.tab-control.render">Render</span>
+			</button>
+		</div>
+	</div>
 
-					// Weight Shift sway (~0.35 Hz slow postural center of mass shift)
-					const swayPhase = Math.sin(time * 0.35);
-					const swayMicro = Math.sin(time * 0.85);
+	<!--
+		MARK: MAIN
+	-->
+	<div class="main-wrapper" id="mainWrapper" onclick="hideAllMenus();">
+		<header class="window-title">
+			<div class="header-left">
+				<button class="icon-button" id="panelToggleBtn" translate="no" onmousedown="toggleSidebar('controls-bar')" title="Toggle sidebar" data-locale-attr="title:app.main.header.toggle-sidebar">side_navigation</button>
+			</div>
+			<div class="header-center">
+				
+			</div>
+			<div class="header-right">
+				<button class="icon-button" translate="no" id="enterARBtn" title="View in AR" data-locale-attr="title:app.main.header.view-in-ar">view_in_ar</button>
+				<button class="icon-button" translate="no" id="poseModeBtn" title="Pose mode">accessibility_new</button>
+				<button class="icon-button" translate="no" id="playPauseBtn" title="Play / Pause animation (P)" disabled data-locale-attr="title:app.main.header.play-pause-animation">play_arrow</button>
+				<button class="icon-button" translate="no" id="resetCameraBtn" title="Recenter (R)" data-locale-attr="title:app.main.header.recenter">reset_focus</button>
+			</div>
+		</header>
+		
+		<footer class="camera-ui" id="camera-ui">
+			<button class="camera-button" translate="no" id="photo-btn" data-locale-attr="title:app.main.footer.take-photo" title="Take photo"></button>
+		</footer>
 
-					// Hips lateral weight shift & subtle roll
-					const hipsNode = humanoid.getNormalizedBoneNode('hips');
-					if (hipsNode) {
-						hipsNode.rotation.z = (swayPhase * 0.02 + swayMicro * 0.005) * intensity;
-						hipsNode.rotation.x = Math.cos(time * 0.35) * 0.01 * intensity;
-					}
+		<div id="crosshair">
+			<div class="crosshair-dot"></div>
+		</div>
+	</div>
 
-					// Spine & Chest Breathing + Counter-sway
-					const spineNode = humanoid.getNormalizedBoneNode('spine');
-					if (spineNode) {
-						spineNode.rotation.x = (breathPhase * 0.015) * intensity;
-						spineNode.rotation.z = (-swayPhase * 0.015) * intensity;
-					}
+	<!-- hidden file input for backgroud image button -->
+	<input type="file" id="backgroundImageFileInput" accept="image/*" style="display:none" />
 
-					const chestNode = humanoid.getNormalizedBoneNode('chest') || humanoid.getNormalizedBoneNode('upperChest');
-					if (chestNode) {
-						chestNode.rotation.x = (breathPhaseDelayed * 0.025) * intensity;
-						chestNode.rotation.z = (-swayPhase * 0.008) * intensity;
-					}
+	<div id="infoPanel" hidden></div>
+	<div id="dragOverlay" style="display:none;"><span class="lang-en">Drop file</span><span class="lang-ja">ドロップ</span></div>
+	<div id="controlsPanel" hidden></div>
+	<div id="animationPanel" hidden></div>
+	<div id="posePanel" hidden></div>
+	<div id="facePanel" hidden></div>
+	<div id="featuresPanel" hidden></div>
+	<div id="vrmaButtons" hidden></div>
+	<div id="status" hidden></div>
+	<span id="vrmName" hidden></span>
+	<button id="tabFeaturesBtn" hidden><span class="lang-en">Scene</span><span class="lang-ja">シーン</span></button>
+	<button id="tabAnimationBtn" hidden><span class="lang-en">Model</span><span class="lang-ja">モデル</span></button>
+	<button id="tabPoseBtn" hidden><span class="lang-en">Pose</span><span class="lang-ja">ポーズ</span></button>
+	<button id="tabFaceBtn" hidden><span class="lang-en">Face</span><span class="lang-ja">顔</span></button>
+	<button id="playBtn" hidden><span class="lang-en">Play</span><span class="lang-ja">再生</span></button>
+	<button id="pauseBtn" hidden><span class="lang-en">Pause</span><span class="lang-ja">一時停止</span></button>
+	<button id="stopBtn" hidden><span class="lang-en">Stop</span><span class="lang-ja">停止</span></button>
+	<input type="file" id="filePicker" accept=".vrm,.vrma" multiple hidden />
 
-					// Neck & Head subtle balance compensation & micro-drift
-					const neckNode = humanoid.getNormalizedBoneNode('neck');
-					if (neckNode) {
-						neckNode.rotation.x = (-breathPhase * 0.008) * intensity;
-					}
+	<button class="lang-switch" onclick="toggleLang()" style="display:none;"><span class="lang-en">English</span><span class="lang-ja">日本語</span></button>
+	<script src="script/settings.js"></script>
+	<script src="script/prompts.js"></script>
+	<script src="script/i18n.js"></script>
 
-					const headNode = humanoid.getNormalizedBoneNode('head');
-					if (headNode) {
-						const headYaw = (Math.sin(time * 0.5) * 0.012 + Math.cos(time * 0.23) * 0.008) * intensity;
-						const headPitch = (Math.sin(time * 0.7) * 0.01) * intensity;
-						headNode.rotation.y = headYaw;
-						headNode.rotation.x = headPitch;
-						headNode.rotation.z = (-swayPhase * 0.006) * intensity;
-					}
-
-					// Shoulders breathing rise & fall
-					const leftShoulder = humanoid.getNormalizedBoneNode('leftShoulder');
-					const rightShoulder = humanoid.getNormalizedBoneNode('rightShoulder');
-					if (leftShoulder) leftShoulder.rotation.z = (-0.05 + breathPhase * 0.008) * intensity;
-					if (rightShoulder) rightShoulder.rotation.z = (0.05 - breathPhase * 0.008) * intensity;
-
-					// Upper Arms: Lower arms down from T-Pose (~70° / 1.22 rad) into a natural human standing stance
-					const leftArm = humanoid.getNormalizedBoneNode('leftUpperArm');
-					const rightArm = humanoid.getNormalizedBoneNode('rightUpperArm');
-					if (leftArm) {
-						leftArm.rotation.z = (1.22 + swayPhase * 0.015) * intensity;
-						leftArm.rotation.x = (0.08 + breathPhase * 0.005) * intensity;
-					}
-					if (rightArm) {
-						rightArm.rotation.z = (-1.22 - swayPhase * 0.015) * intensity;
-						rightArm.rotation.x = (0.08 + breathPhase * 0.005) * intensity;
-					}
-
-					// Lower Arms (Elbows): subtle natural bend & inward forearm tilt
-					const leftLowerArm = humanoid.getNormalizedBoneNode('leftLowerArm');
-					const rightLowerArm = humanoid.getNormalizedBoneNode('rightLowerArm');
-					if (leftLowerArm) {
-						leftLowerArm.rotation.z = -0.18 * intensity;
-						leftLowerArm.rotation.y = 0.25 * intensity;
-					}
-					if (rightLowerArm) {
-						rightLowerArm.rotation.z = 0.18 * intensity;
-						rightLowerArm.rotation.y = -0.25 * intensity;
-					}
-
-					// Relaxed Natural Finger Curl (eliminates stiff board fingers)
-					['left', 'right'].forEach((side) => {
-						const isLeft = side === 'left';
-						const sign = isLeft ? 1 : -1;
-						['Index', 'Middle', 'Ring', 'Little'].forEach((finger) => {
-							const prox = humanoid.getNormalizedBoneNode(`${side}${finger}Proximal`);
-							const inter = humanoid.getNormalizedBoneNode(`${side}${finger}Intermediate`);
-							if (prox) prox.rotation.z = -0.25 * sign * intensity;
-							if (inter) inter.rotation.z = -0.35 * sign * intensity;
-						});
-						const thumbProx = humanoid.getNormalizedBoneNode(`${side}ThumbProximal`);
-						if (thumbProx) thumbProx.rotation.x = 0.2 * intensity;
-					});
-				}
-
-				// 2. Micro Eye Saccades (Human Eye Drift)
-				if (eyeSaccadesToggle && eyeSaccadesToggle.checked && currentVrm.lookAt && !followMouseToggle.checked) {
-					if (time - lastSaccadeTime > nextSaccadeInterval) {
-						lastSaccadeTime = time;
-						nextSaccadeInterval = 1.5 + Math.random() * 3.5;
-						saccadeTargetYaw = (Math.random() - 0.5) * 10;
-						saccadeTargetPitch = (Math.random() - 0.5) * 6;
-					}
-
-					saccadeCurrentYaw += (saccadeTargetYaw - saccadeCurrentYaw) * Math.min(deltaTime * 12.0, 1.0);
-					saccadeCurrentPitch += (saccadeTargetPitch - saccadeCurrentPitch) * Math.min(deltaTime * 12.0, 1.0);
-
-					if (!currentAction) {
-						currentVrm.lookAt.yaw = saccadeCurrentYaw;
-						currentVrm.lookAt.pitch = saccadeCurrentPitch;
-					}
-				}
-
-				// 3. Auto Blinking
-				if (blinkToggle && blinkToggle.checked && !currentAction) {
-					if (time - lastBlinkTime > nextBlinkInterval) {
-						lastBlinkTime = time;
-						nextBlinkInterval = 2 + Math.random() * 4;
-					}
-					const blinkProgress = time - lastBlinkTime;
-					let blinkWeight = 0;
-					if (blinkProgress < 0.1) {
-						blinkWeight = blinkProgress / 0.1;
-					} else if (blinkProgress < 0.2) {
-						blinkWeight = 1 - (blinkProgress - 0.1) / 0.1;
-					}
-					if (currentVrm.expressionManager) {
-						currentVrm.expressionManager.setValue('blink', blinkWeight);
-					}
-				}
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
+				"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/",
+				"@pixiv/three-vrm": "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@3.5.5/lib/three-vrm.module.min.js",
+				"@pixiv/three-vrm-animation": "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm-animation@3.5.5/lib/three-vrm-animation.module.min.js",
+				"vrm-viewer/boneConfig": "./src/boneConfig.js",
+				"vrm-viewer/settings": "./src/settings.js",
+				"vrm-viewer/hotkeys": "./src/hotkeys.js",
+				"vrm-viewer/vrmInfo": "./src/vrmInfo.js",
+				"vrm-viewer/photo": "./src/photo.js",
+				"vrm-viewer/skybox": "./src/skybox.js",
+				"vrm-viewer/cameraPresets": "./src/cameraPresets.js",
+				"vrm-viewer/ar": "./src/ar.js",
+				"vrm-viewer/materials": "./src/materials.js",
+				"vrm-viewer/eyeJoystick": "./src/eyeJoystick.js"
 			}
+		}
+	</script>
 
-			// --- Animation Loop ---
-			let lastFrameTime = performance.now();
+	<script type="module" src="script/app.js"></script>
 
-			function animate() {
-				requestAnimationFrame( animate );
 
-				const now = performance.now();
-				const deltaTime = Math.min((now - lastFrameTime) / 1000, 0.1);
-				lastFrameTime = now;
-				const time = now / 1000;
+	<script>
+		//MARK: Settings
 
-				updateStandbyAndBlink(deltaTime, time);
-				if ( currentMixer ) {
-					currentMixer.update( deltaTime );
-				}
-				if ( currentVrm ) {
-					currentVrm.update( deltaTime );
-				}
-				if ( activeTab === 'pose' ) {
-					updateBoneHandles();
-				}
-				if ( activeTab === 'face' && followMouseToggle.checked ) {
-					syncLookAtSliders();
-				}
-
-				controls.update();
-				renderer.render( scene, camera );
+		function loadSettings() {
+			// theme
+			const theme = Settings.getSetting("theme");
+			if (theme) document.body.className = theme;
+			if (Settings.getSetting("theme") === "theme-custom") {
+				applyCustomTheme(Settings.getSetting("theme-custom-value", ""));
 			}
+		}
 
-			// --- Camera Framing Presets & FOV ---
-			document.getElementById('camHeadBtn')?.addEventListener('click', () => applyCameraPreset(camera, controls, 'head'));
-			document.getElementById('camUpperBtn')?.addEventListener('click', () => applyCameraPreset(camera, controls, 'upperBody'));
-			document.getElementById('camFullBtn')?.addEventListener('click', () => applyCameraPreset(camera, controls, 'fullBody'));
-			document.getElementById('camResetBtn')?.addEventListener('click', () => applyCameraPreset(camera, controls, 'reset'));
+		loadSettings();
 
-			const cameraFovSlider = document.getElementById('cameraFovSlider');
-			const cameraFovVal = document.getElementById('cameraFovVal');
-			cameraFovSlider?.addEventListener('input', (e) => {
-				const fov = parseInt(e.target.value, 10);
-				setCameraFOV(camera, fov);
-				if (cameraFovVal) cameraFovVal.textContent = `${fov}°`;
-			});
+		function applyCustomTheme(cssText) {
+			let styleEl = document.getElementById("custom-theme-style");
+			if (!styleEl) {
+				styleEl = document.createElement("style");
+				styleEl.id = "custom-theme-style";
+				document.head.appendChild(styleEl);
+			}
+			styleEl.textContent = `.theme-custom { ${cssText} }`;
+		}
+	</script>
+</body>
 
-			// --- Skybox & Background Controls ---
-			const bgColorPicker = document.getElementById('bgColorPicker');
-			bgColorPicker?.addEventListener('input', (e) => setBackgroundColor(scene, e.target.value));
-
-			const uploadSkyboxBtn = document.getElementById('uploadSkyboxBtn');
-			const skyboxFileInput = document.getElementById('skyboxFileInput');
-			uploadSkyboxBtn?.addEventListener('click', () => skyboxFileInput?.click());
-			skyboxFileInput?.addEventListener('change', async (e) => {
-				const file = e.target.files?.[0];
-				if (file) {
-					await setSkyboxSource(scene, renderer, file);
-					skyboxFileInput.value = '';
-				}
-			});
-
-			const skyboxBlurSlider = document.getElementById('skyboxBlurSlider');
-			const skyboxBlurVal = document.getElementById('skyboxBlurVal');
-			skyboxBlurSlider?.addEventListener('input', (e) => {
-				const blur = parseFloat(e.target.value);
-				setBackgroundBlur(scene, blur);
-				if (skyboxBlurVal) skyboxBlurVal.textContent = blur.toFixed(2);
-			});
-
-			const skyboxRotationSlider = document.getElementById('skyboxRotationSlider');
-			const skyboxRotationVal = document.getElementById('skyboxRotationVal');
-			skyboxRotationSlider?.addEventListener('input', (e) => {
-				const deg = parseInt(e.target.value, 10);
-				setBackgroundRotation(scene, deg);
-				if (skyboxRotationVal) skyboxRotationVal.textContent = `${deg}°`;
-			});
-
-			// --- Rendering & Material Effects ---
-			document.getElementById('wireframeToggle')?.addEventListener('change', (e) => setWireframeMode(currentVrm, e.target.checked));
-			document.getElementById('shadowsToggle')?.addEventListener('change', (e) => setShadowsEnabled(renderer, scene, currentVrm, e.target.checked));
-
-			// --- Photo Mode ---
-			document.getElementById('takePhotoBtn')?.addEventListener('click', () => {
-				const transparent = document.getElementById('photoTransparentToggle')?.checked ?? false;
-				captureScreenshot(renderer, scene, camera, { transparent, filename: 'vrm-photo.png' });
-			});
-
-			// --- WebXR AR Mode ---
-			document.getElementById('enterArBtn')?.addEventListener('click', async () => {
-				const ok = await startARSession(renderer, scene, camera);
-				if (!ok) {
-					setStatus('WebXR AR not supported on this device/browser', 'このブラウザ/デバイスはWebXR ARに対応していません');
-				} else {
-					setStatus('AR Mode Active — Tap floor to position model', 'ARモード実行中 — 床をタップしてモデルを配置');
-				}
-			});
-
-			// Start the animation loop
-			animate();
-
-			// --- Initial Load ---
-			// Load default VRM model immediately upon module load
-			(async () => {
-				await loadVRM(VRM_MODEL_URL, 'sample.vrm');
-				updateButtons();
-			})();
-		</script>
-	</body>
 </html>

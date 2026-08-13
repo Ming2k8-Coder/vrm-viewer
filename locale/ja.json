@@ -1,0 +1,201 @@
+{
+    "meta": {
+        "code": "ja",
+        "name": "Japanese",
+        "nativeName": "日本語",
+        "direction": "ltr",
+        "status": "99%",
+        "translators": [
+            {
+                "name": "AI generated",
+                "role": "slop-maker",
+                "links": {}
+            }
+        ]
+    },
+
+    "strings": {
+        "COMMON": {
+            "common.ok": "OK",
+            "common.cancel": "キャンセル",
+            "common.close": "閉じる",
+            "common.yes": "はい",
+            "common.no": "いいえ",
+            "common.back": "戻る"
+        },
+        "APP": {
+            "SIDEBAR": {
+                "HEADER": {
+                    "app.sidebar.header.open-model": "モデルを開く",
+                    "app.sidebar.header-more-menu.open-model": "モデルを開く",
+                    "app.sidebar.header-more-menu.model-information": "モデル情報",
+                    "app.sidebar.header-more-menu.settings": "設定",
+                    "app.sidebar.header-more-menu.keyboard-shortcuts": "キーボードショートカット",
+                    "app.sidebar.header-more-menu.fullscreen": "全画面表示",
+                    "app.sidebar.header-more-menu.about-figure": "Figure について"
+                },
+                "FOOTER": {
+                    "app.main.footer.take-photo": "写真を撮る"
+                },
+                "TAB CONTROLLER": {
+                    "app.sidebar.tab-control.model": "モデル",
+                    "app.sidebar.tab-control.scene": "シーン",
+                    "app.sidebar.tab-control.render": "レンダリング"
+                },
+                "MODEL TAB": {
+                    "app.sidebar.model-tab.body": "ボディ",
+                    "app.sidebar.model-tab.body.animation": "アニメーション",
+                    "app.sidebar.model-tab.body.reset-pose": "ポーズをリセット",
+                    "app.sidebar.model-tab.body.reset-pose.reset": "リセット",
+                    "app.sidebar.model-tab.face": "顔",
+                    "app.sidebar.model-tab.face.look-at-camera": "カメラを見る",
+                    "app.sidebar.model-tab.face.head-follows-camera": "カメラ追従（頭）",
+                    "app.sidebar.model-tab.face.blink": "まばたき",
+                    "app.sidebar.model-tab.face.joystick-hint": "枠内をドラッグして目線を調整します。",
+                    "app.sidebar.model-tab.face.recenter-eyes": "目線を中央に戻す",
+                    "app.sidebar.model-tab.face.recenter-eyes.recenter": "中央に戻す",
+                    "app.sidebar.model-tab.face.clear-expressions": "すべての表情をクリア",
+                    "app.sidebar.model-tab.face.clear-expressions.reset": "リセット",
+                    "app.sidebar.model-tab.materials": "マテリアル"
+                },
+                "SCENE TAB": {
+                    "app.sidebar.scene-tab.camera": "カメラ",
+                    "app.sidebar.render-tab.camera.fov": "視野角",
+                    "app.sidebar.scene-tab.light": "ライト",
+                    "app.sidebar.scene-tab.light.position-x": "位置 X",
+                    "app.sidebar.scene-tab.light.position-y": "位置 Y",
+                    "app.sidebar.scene-tab.light.position-z": "位置 Z",
+                    "app.sidebar.scene-tab.light.brightness": "明るさ",
+                    "app.sidebar.scene-tab.light.color": "色",
+                    "app.sidebar.scene-tab.light.reset-light": "ライトをリセット",
+                    "app.sidebar.scene-tab.light.reset-light.reset": "リセット",
+                    "app.sidebar.scene-tab.background": "背景",
+                    "app.sidebar.scene-tab.background.color": "色",
+                    "app.sidebar.scene-tab.background.skybox-blur": "スカイボックスをぼかす",
+                    "app.sidebar.scene-tab.background.skybox-position": "スカイボックスの位置",
+                    "app.sidebar.scene-tab.background.light-color-as-background-average": "背景の平均色をライトに使用",
+                    "app.sidebar.scene-tab.background.light-color-as-background-average.set-color": "色を設定"
+                },
+                "RENDER TAB": {
+                    "app.sidebar.render-tab.view-mode": "表示モード",
+                    "app.sidebar.render-tab.view-mode.vrm-mtoon": "VRM MToon",
+                    "app.sidebar.render-tab.view-mode.texture": "テクスチャ",
+                    "app.sidebar.render-tab.view-mode.solid": "単色",
+                    "app.sidebar.render-tab.view-mode.wireframe": "ワイヤーフレーム",
+                    "app.sidebar.render-tab.view-mode.face-orientation": "面の向き"
+                }
+            },
+            "MAIN": {
+                "app.main.header.toggle-sidebar": "サイドバーを切り替え",
+                "app.main.header.view-in-ar": "ARで見る",
+                "app.main.header.play-pause-animation": "アニメーション 再生 / 一時停止 (P)",
+                "app.main.header.recenter": "再センタリング (R)"
+            }
+        },
+        "DIALOGS": {
+            "ABOUT": {
+                "dialogs.about.main.report-an-issue": "問題を報告",
+                "dialogs.about.main.credits": "クレジット",
+                "dialogs.about.main.legal": "法的情報",
+                "dialogs.about.credits.libraries": "ライブラリ",
+                "dialogs.about.credits.libraries.vrm-viewer": "VRM ビューアー",
+                "dialogs.about.credits.libraries.3d-renderer": "3D レンダラー",
+                "dialogs.about.credits.graphics": "グラフィック",
+                "dialogs.about.credits.graphics.symbolic-icons": "シンボリックアイコン",
+                "dialogs.about.credits.graphics.colored-icons": "カラ―アイコン",
+                "dialogs.about.credits.general-inspiration": "全体的なインスピレーション",
+                "dialogs.about.credits.general-inspiration.design-guidelines": "デザインガイドライン",
+                "dialogs.about.legal.notice": "本アプリケーションはいかなる保証も提供しません。{licenseLink} の下でライセンスされています。"
+            },
+            "SETTINGS": {
+                "dialogs.settings.main.appearence": "外観",
+                "dialogs.settings.main.appearence.theme.light": "ライト",
+                "dialogs.settings.main.appearence.theme.dark": "ダーク",
+                "dialogs.settings.main.appearence.theme.oled": "OLED",
+                "dialogs.settings.main.language": "言語",
+                "dialogs.settings.main.translating": "Figure の翻訳に協力する",
+                "dialogs.settings.main.status-bar": "ステータスバー"
+            },
+            "MODEL INFO": {
+                "VRM 0.0": {
+                    "dialogs.model-info.vrm0.avatar-information": "アバター情報",
+                    "dialogs.model-info.vrm0.avatar-information.title": "タイトル",
+                    "dialogs.model-info.vrm0.avatar-information.creator": "制作者",
+                    "dialogs.model-info.vrm0.avatar-information.contact-information": "連絡先情報",
+                    "dialogs.model-info.vrm0.avatar-information.reference": "参照",
+                    "dialogs.model-info.vrm0.avatar-information.version": "バージョン",
+                    "dialogs.model-info.vrm0.avatar-information.vrm-version": "VRM バージョン",
+                    "dialogs.model-info.vrm0.avatar-personality": "アバターの利用条件",
+                    "dialogs.model-info.vrm0.avatar-personality.allowed-user-name": "利用可能なユーザー",
+                    "dialogs.model-info.vrm0.avatar-personality.depictions-of-violence": "暴力表現",
+                    "dialogs.model-info.vrm0.avatar-personality.depictions-of-sexual-acts": "性的表現",
+                    "dialogs.model-info.vrm0.avatar-personality.commercial-use": "商用利用",
+                    "dialogs.model-info.vrm0.avatar-personality.permission-information-url": "利用許可情報 URL",
+                    "dialogs.model-info.vrm0.redistribution-and-alteration": "再配布と改変",
+                    "dialogs.model-info.vrm0.redistribution-and-alteration.license": "ライセンス",
+                    "dialogs.model-info.vrm0.usage.disallow": "禁止",
+                    "dialogs.model-info.vrm0.usage.allow": "許可",
+                    "dialogs.model-info.vrm0.license.cc0": "CC0",
+                    "dialogs.model-info.vrm0.license.cc-by": "CC BY",
+                    "dialogs.model-info.vrm0.license.cc-by-nc": "CC BY-NC",
+                    "dialogs.model-info.vrm0.license.cc-by-sa": "CC BY-SA",
+                    "dialogs.model-info.vrm0.license.cc-by-nc-sa": "CC BY-NC-SA",
+                    "dialogs.model-info.vrm0.license.redistribution-prohibited": "再配布禁止"
+                },
+                "VRM 1.0": {
+                    "dialogs.model-info.vrm1.avatar-information": "アバター情報",
+                    "dialogs.model-info.vrm1.avatar-information.avatar-name": "アバター名",
+                    "dialogs.model-info.vrm1.avatar-information.version": "バージョン",
+                    "dialogs.model-info.vrm1.avatar-information.authors": "作者",
+                    "dialogs.model-info.vrm1.avatar-information.creator-copyright": "制作者の著作権",
+                    "dialogs.model-info.vrm1.avatar-information.contact-information": "連絡先情報",
+                    "dialogs.model-info.vrm1.avatar-information.references": "参照",
+                    "dialogs.model-info.vrm1.avatar-information.third-party-licenses": "サードパーティライセンス",
+                    "dialogs.model-info.vrm1.avatar-information.vrm-version": "VRM バージョン",
+                    "dialogs.model-info.vrm1.avatar-permission": "アバターの利用許可",
+                    "dialogs.model-info.vrm1.avatar-permission.avatar-use-permission": "アバター使用許可",
+                    "dialogs.model-info.vrm1.avatar-permission.violent-usage": "暴力的利用",
+                    "dialogs.model-info.vrm1.avatar-permission.sexual-usage": "性的利用",
+                    "dialogs.model-info.vrm1.avatar-permission.political-usage": "政治的利用",
+                    "dialogs.model-info.vrm1.avatar-permission.antisocial-usage": "反社会的利用",
+                    "dialogs.model-info.vrm1.avatar-permission.commercial-usage": "商用利用",
+                    "dialogs.model-info.vrm1.avatar-permission.only-author": "作者のみ",
+                    "dialogs.model-info.vrm1.avatar-permission.only-separately-licensed": "別途ライセンスされた者のみ",
+                    "dialogs.model-info.vrm1.avatar-permission.everyone": "すべての人",
+                    "dialogs.model-info.vrm1.redistribution-and-alteration": "再配布と改変",
+                    "dialogs.model-info.vrm1.redistribution-and-alteration.redistribution": "再配布",
+                    "dialogs.model-info.vrm1.redistribution-and-alteration.alterations": "改変",
+                    "dialogs.model-info.vrm1.redistribution-and-alteration.attribution": "クレジット表記",
+                    "dialogs.model-info.vrm1.commercial-usage.personal-non-profit": "個人利用（非商用）",
+                    "dialogs.model-info.vrm1.commercial-usage.personal-profit": "個人利用（商用可）",
+                    "dialogs.model-info.vrm1.commercial-usage.corporate": "法人利用",
+                    "dialogs.model-info.vrm1.modification.prohibited": "改変禁止",
+                    "dialogs.model-info.vrm1.modification.allowed": "改変可",
+                    "dialogs.model-info.vrm1.modification.allowed-redistribution": "改変および再配布可"
+                },
+                "VRM UNKNOWN": {
+                    "dialogs.model-info.vrm-unknown.version": "バージョン"
+                },
+                "COMMON": {
+                    "dialogs.model-info.common.unknown": "不明",
+                    "dialogs.model-info.common.yes": "はい",
+                    "dialogs.model-info.common.no": "いいえ"
+                }
+            },
+            "KEYBOARD SHORTCUTS": {
+                "dialogs.shortcuts.general": "一般",
+                "dialogs.shortcuts.general.open-model": "モデルを開く",
+                "dialogs.shortcuts.general.orbit-around": "回転",
+                "dialogs.shortcuts.general.zoom": "ズーム",
+                "dialogs.shortcuts.general.pan": "移動",
+                "dialogs.shortcuts.general.play-pause": "開始/一時停止",
+                "dialogs.shortcuts.general.recenter-camera": "カメラを中央に戻す",
+                "dialogs.shortcuts.window": "ウィンドウ",
+                "dialogs.shortcuts.window.fullscreen": "全画面表示",
+                "dialogs.shortcuts.window.settings": "設定",
+                "dialogs.shortcuts.window.keyboard-shortcuts": "キーボードショートカット",
+                "dialogs.shortcuts.window.about-figure": "Figure について"
+            }
+        }
+    }
+}
