@@ -12,19 +12,6 @@ export const VRM_MODEL_URL = './VRM/default.vrm';
 
 // VRMA animations dictionary: map an id/key (used by buttons) to URL.
 export const VRMA_ANIMATIONS = {
-	// i'm commenting this animations out bc I think they're kinda bad :P
-	// not willing to actually removing them tho, sry for the author
-	// 'Angry'       : './VRMA/tk256ailab/Angry.vrma',
-	// 'Blush'       : './VRMA/tk256ailab/Blush.vrma',
-	// 'Clapping'    : './VRMA/tk256ailab/Clapping.vrma',
-	// 'Goodbye'     : './VRMA/tk256ailab/Goodbye.vrma',
-	// 'Jump'        : './VRMA/tk256ailab/Jump.vrma',
-	// 'LookAround'  : './VRMA/tk256ailab/LookAround.vrma',
-	// 'Relax'       : './VRMA/tk256ailab/Relax.vrma',
-	// 'Sad'         : './VRMA/tk256ailab/Sad.vrma',
-	// 'Sleepy'      : './VRMA/tk256ailab/Sleepy.vrma',
-	// 'Surprised'   : './VRMA/tk256ailab/Surprised.vrma',
-	// 'Thinking'    : './VRMA/tk256ailab/Thinking.vrma',
 	'Idle'			 : './VRMA/flarom/idle.vrma',
 	'Walk'           : './VRMA/flarom/walk.vrma',
 	'Show Full Body' : './VRMA/VRoid Project/ShowFullBody.vrma',
@@ -33,7 +20,18 @@ export const VRMA_ANIMATIONS = {
 	'Shoot'          : './VRMA/VRoid Project/Shoot.vrma',
 	'Spin'           : './VRMA/VRoid Project/Spin.vrma',
 	'Model Pose'     : './VRMA/VRoid Project/ModelPose.vrma',
-	'Squat'          : './VRMA/VRoid Project/Squat.vrma'
+	'Squat'          : './VRMA/VRoid Project/Squat.vrma',
+	'Angry'          : './VRMA/tk256ailab/Angry.vrma',
+	'Blush'          : './VRMA/tk256ailab/Blush.vrma',
+	'Clapping'       : './VRMA/tk256ailab/Clapping.vrma',
+	'Goodbye'        : './VRMA/tk256ailab/Goodbye.vrma',
+	'Jump'           : './VRMA/tk256ailab/Jump.vrma',
+	'LookAround'     : './VRMA/tk256ailab/LookAround.vrma',
+	'Relax'          : './VRMA/tk256ailab/Relax.vrma',
+	'Sad'            : './VRMA/tk256ailab/Sad.vrma',
+	'Sleepy'         : './VRMA/tk256ailab/Sleepy.vrma',
+	'Surprised'      : './VRMA/tk256ailab/Surprised.vrma',
+	'Thinking'       : './VRMA/tk256ailab/Thinking.vrma'
 };
 
 export const SKYBOXES = {
