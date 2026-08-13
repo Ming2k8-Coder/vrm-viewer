@@ -65,9 +65,27 @@ export function initScene() {
 	});
 	state.scene.add(state.transformControlsHelper);
 
-	// instantiate the ground shadow and the light marker
+	// instantiate ground shadow, grid floor, axes helper, and light marker
 	state.groundShadow = createGroundShadow(1);
+	state.gridHelper = new THREE.GridHelper(10, 20, 0x666666, 0x333333);
+	state.gridHelper.position.y = 0;
+	state.gridHelper.visible = false;
+	state.scene.add(state.gridHelper);
+
+	state.axesHelper = new THREE.AxesHelper(1.2);
+	state.axesHelper.visible = false;
+	state.axesHelper.renderOrder = 999;
+	state.scene.add(state.axesHelper);
+
 	state.lightMarker = createLightMarker();
+}
+
+export function toggleGridHelper(visible) {
+	if (state.gridHelper) state.gridHelper.visible = !!visible;
+}
+
+export function toggleAxesHelper(visible) {
+	if (state.axesHelper) state.axesHelper.visible = !!visible;
 }
 
 /**

@@ -197,4 +197,12 @@ export function initEvents() {
 			}, 1000);
 		}
 	});
+
+	// Ground grid & XYZ orientation axes helpers toggles
+	document.getElementById('gridHelperToggle')?.addEventListener('change', (e) => {
+		import('./scene.js').then(m => m.toggleGridHelper(e.target.checked));
+	});
+	document.getElementById('axesHelperToggle')?.addEventListener('change', (e) => {
+		import('./scene.js').then(m => m.toggleAxesHelper(e.target.checked));
+	});
 }

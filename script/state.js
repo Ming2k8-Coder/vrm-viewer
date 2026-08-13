@@ -21,6 +21,8 @@ export const state = {
 	currentAction: undefined,
 	vrmaAnimationClip: undefined,
 	groundShadow: null,
+	gridHelper: null,
+	axesHelper: null,
 
 	transformControls: null,
 	transformControlsHelper: null,
