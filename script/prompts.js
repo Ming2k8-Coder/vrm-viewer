@@ -924,11 +924,75 @@ function showBanner({ message = "", buttons = [], menuButtons = [] }) {
     document.body.appendChild(banner);
 }
 
+function calculateModelStats(vrm) {
+    let triangles = 0;
+    let vertices = 0;
+    let meshes = 0;
+    const materialsSet = new Set();
+    const bonesSet = new Set();
+
+    const root = vrm?.scene || vrm;
+    if (root && typeof root.traverse === 'function') {
+        root.traverse((obj) => {
+            if (obj.isMesh) {
+                meshes++;
+                if (obj.material) {
+                    if (Array.isArray(obj.material)) {
+                        obj.material.forEach(m => materialsSet.add(m));
+                    } else {
+                        materialsSet.add(obj.material);
+                    }
+                }
+                const geom = obj.geometry;
+                if (geom) {
+                    if (geom.index) {
+                        triangles += geom.index.count / 3;
+                    } else if (geom.attributes && geom.attributes.position) {
+                        triangles += geom.attributes.position.count / 3;
+                    }
+                    if (geom.attributes && geom.attributes.position) {
+                        vertices += geom.attributes.position.count;
+                    }
+                }
+            }
+            if (obj.isBone) {
+                bonesSet.add(obj);
+            }
+        });
+    }
+
+    let springBones = 0;
+    if (vrm?.springBoneManager) {
+        if (vrm.springBoneManager.joints) {
+            springBones = vrm.springBoneManager.joints.size || vrm.springBoneManager.joints.length || 0;
+        } else if (vrm.springBoneManager.springs) {
+            springBones = vrm.springBoneManager.springs.length || 0;
+        }
+    }
+
+    let expressionCount = 0;
+    if (vrm?.expressionManager && vrm.expressionManager.expressions) {
+        expressionCount = Object.keys(vrm.expressionManager.expressions).length;
+    } else if (vrm?.blendShapeProxy && vrm.blendShapeProxy.blendShapeGroups) {
+        expressionCount = Object.keys(vrm.blendShapeProxy.blendShapeGroups).length;
+    }
+
+    return {
+        triangles: Math.round(triangles),
+        vertices,
+        meshes,
+        materials: materialsSet.size,
+        bones: bonesSet.size,
+        springBones,
+        expressionCount
+    };
+}
+
 function showVRMMeta(vrm) {
-    if (!vrm || !vrm.meta) {
+    if (!vrm) {
         return Promise.resolve();
     }
-    const meta = vrm.meta;
+    const meta = vrm.meta || {};
     const table = document.createElement('table');
     table.style.width = '100%';
 
@@ -940,11 +1004,11 @@ function showVRMMeta(vrm) {
         tdLabel.style.padding = '6px 8px';
         tdLabel.textContent = label;
         tdLabel.title = label;
-        tdLabel.dataset.locale = locale;
+        if (locale) tdLabel.dataset.locale = locale;
         const tdValue = document.createElement('td');
         tdValue.style.borderBottom = '1px solid var(--border-light-color)';
         tdValue.style.padding = '6px 8px';
-        tdValue.textContent = value?.text ?? value ?? 'N/A';
+        tdValue.textContent = value?.text ?? (value !== undefined && value !== null && value !== '' ? String(value) : 'N/A');
         if (value?.locale) {
             tdValue.dataset.locale = value.locale;
         }
@@ -960,11 +1024,23 @@ function showVRMMeta(vrm) {
         td.style.textAlign = 'center';
         td.style.padding = '8px';
         td.style.fontWeight = 'bold';
+        td.style.background = 'var(--field-color, rgba(255,255,255,0.05))';
         td.textContent = title;
-        td.dataset.locale = locale;
+        if (locale) td.dataset.locale = locale;
         tr.appendChild(td);
         table.appendChild(tr);
     };
+
+    // Calculate technical 3D metrics
+    const stats = calculateModelStats(vrm);
+    addSubTitle('Model Specifications', 'dialogs.model-info.specifications');
+    addItem('Polygons (Triangles)', stats.triangles.toLocaleString());
+    addItem('Vertices', stats.vertices.toLocaleString());
+    addItem('Meshes', stats.meshes);
+    addItem('Materials', stats.materials);
+    addItem('Bones (Joints)', stats.bones);
+    addItem('SpringBones', stats.springBones);
+    addItem('Expressions', stats.expressionCount);
 
     // determine VRM meta version safely
     const metaVersion = meta.metaVersion;
@@ -990,13 +1066,16 @@ function showVRMMeta(vrm) {
         addItem('License', resolveEnum(meta.licenseName, LICENSE_MAP_VRM0), 'dialogs.model-info.vrm0.redistribution-and-alteration.license');
     } else if (metaVersion == '1') {
         // VRM 1.x
+        const authorsStr = Array.isArray(meta.authors) ? meta.authors.join(', ') : (meta.authors || 'N/A');
+        const refsStr = Array.isArray(meta.references) ? meta.references.join(', ') : (meta.references || 'N/A');
+
         addSubTitle('Avatar information', 'dialogs.model-info.vrm1.avatar-information');
-        addItem('Avatar name'         , meta.name                 , 'dialogs.model-info.vrm1.avatar-information.avatar-name');
+        addItem('Avatar name'         , meta.name || meta.title   , 'dialogs.model-info.vrm1.avatar-information.avatar-name');
         addItem('Version'             , meta.version              , 'dialogs.model-info.vrm1.avatar-information.version');
-        addItem('Authors'             , meta.authors.join(', ')   , 'dialogs.model-info.vrm1.avatar-information.authors');
+        addItem('Authors'             , authorsStr                , 'dialogs.model-info.vrm1.avatar-information.authors');
         addItem('Creator copyright'   , meta.copyrightInformation , 'dialogs.model-info.vrm1.avatar-information.creator-copyright');
         addItem('Contact Information' , meta.contactInformation   , 'dialogs.model-info.vrm1.avatar-information.contact-information');
-        addItem('References'          , meta.references.join(', '), 'dialogs.model-info.vrm1.avatar-information.references');
+        addItem('References'          , refsStr                   , 'dialogs.model-info.vrm1.avatar-information.references');
         addItem('Third party licenses', meta.thirdPartyLicenses   , 'dialogs.model-info.vrm1.avatar-information.third-party-licenses');
         addItem('VRM version'         , 'VRM 1.x'                 , "dialogs.model-info.vrm1.avatar-information.vrm-version");
 
@@ -1013,8 +1092,11 @@ function showVRMMeta(vrm) {
         addItem('Alterations'   , resolveEnum(meta.modification, MODIFICATION_MAP), 'dialogs.model-info.vrm1.redistribution-and-alteration.alterations');
         addItem('Attribution'   , meta.creditNotation                             , 'dialogs.model-info.vrm1.redistribution-and-alteration.attribution');
     } else {
-        // Unknown version
-        addItem('VRM version', 'Unknown', 'dialogs.model-info.vrm-unknown.version');
+        // Unknown version or generic VRM/GLTF model
+        addSubTitle('Avatar information', 'dialogs.model-info.vrm-unknown.avatar-information');
+        addItem('Title / Name', meta.name || meta.title || '3D Model');
+        addItem('Author / Creator', meta.author || (Array.isArray(meta.authors) ? meta.authors.join(', ') : meta.authors) || 'Unknown');
+        addItem('VRM Version', metaVersion ? `VRM ${metaVersion}` : 'Standard GLTF/VRM');
     }
 
     promptMessage(table.outerHTML, true, false);
