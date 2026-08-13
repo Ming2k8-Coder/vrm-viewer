@@ -438,14 +438,47 @@
 
 			<div id="featuresPanel" class="tab-panel" hidden>
 				<div class="control-section">
-					<h3><span class="lang-en">Lighting</span><span class="lang-ja">ライティング</span></h3>
+					<h3><span class="lang-en">Camera & View</span><span class="lang-ja">カメラ & ビュー</span></h3>
+					<div class="features-section-col">
+						<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:4px;">
+							<button id="camHeadBtn" class="cam-preset-btn"><span class="lang-en">Head</span><span class="lang-ja">頭部</span></button>
+							<button id="camUpperBtn" class="cam-preset-btn"><span class="lang-en">Upper Body</span><span class="lang-ja">上半身</span></button>
+							<button id="camFullBtn" class="cam-preset-btn"><span class="lang-en">Full Body</span><span class="lang-ja">全身</span></button>
+							<button id="camResetBtn" class="cam-preset-btn"><span class="lang-en">Reset Cam</span><span class="lang-ja">カメラリセット</span></button>
+						</div>
+						<label for="cameraFovSlider" class="features-label"><span class="lang-en">FOV:</span><span class="lang-ja">画角:</span> <span id="cameraFovVal">30°</span></label>
+						<input type="range" id="cameraFovSlider" min="15" max="90" step="1" value="30">
+					</div>
+				</div>
+
+				<div class="control-section">
+					<h3><span class="lang-en">Lighting & Rendering</span><span class="lang-ja">ライティング & レンダリング</span></h3>
 					<div class="features-section-col">
 						<label for="dirLightSlider" class="features-label"><span class="lang-en">Directional Light:</span><span class="lang-ja">平行光源:</span> <span id="dirLightVal">3.0</span></label>
 						<input type="range" id="dirLightSlider" min="0" max="10" step="0.1" value="3.0">
 						<label for="ambLightSlider" class="features-label"><span class="lang-en">Ambient Light:</span><span class="lang-ja">環境光:</span> <span id="ambLightVal">1.0</span></label>
 						<input type="range" id="ambLightSlider" min="0" max="5" step="0.1" value="1.0">
+						<label class="features-toggle-label"><input type="checkbox" id="wireframeToggle"> <span class="lang-en">Wireframe Mode</span><span class="lang-ja">ワイヤーフレーム表示</span></label>
+						<label class="features-toggle-label"><input type="checkbox" id="shadowsToggle"> <span class="lang-en">Enable Shadows</span><span class="lang-ja">影の表示</span></label>
 					</div>
 				</div>
+
+				<div class="control-section">
+					<h3><span class="lang-en">Skybox & Background</span><span class="lang-ja">スカイボックス & 背景</span></h3>
+					<div class="features-section-col">
+						<div style="display:flex;gap:8px;align-items:center;">
+							<label for="bgColorPicker" class="features-label" style="margin:0;"><span class="lang-en">Bg Color:</span><span class="lang-ja">背景色:</span></label>
+							<input type="color" id="bgColorPicker" value="#222222" style="border:none;background:none;cursor:pointer;height:28px;">
+						</div>
+						<button id="uploadSkyboxBtn"><span class="lang-en">Upload Skybox Image...</span><span class="lang-ja">スカイボックス画像をアップロード...</span></button>
+						<input type="file" id="skyboxFileInput" accept="image/*" hidden />
+						<label for="skyboxBlurSlider" class="features-label"><span class="lang-en">Blur:</span><span class="lang-ja">ぼかし:</span> <span id="skyboxBlurVal">0.0</span></label>
+						<input type="range" id="skyboxBlurSlider" min="0" max="1" step="0.05" value="0.0">
+						<label for="skyboxRotationSlider" class="features-label"><span class="lang-en">Rotation:</span><span class="lang-ja">回転:</span> <span id="skyboxRotationVal">0°</span></label>
+						<input type="range" id="skyboxRotationSlider" min="0" max="360" step="1" value="0">
+					</div>
+				</div>
+
 				<div class="control-section">
 					<h3><span class="lang-en">Human Behaviors</span><span class="lang-ja">人間の振る舞い</span></h3>
 					<div class="features-section-col">
@@ -454,6 +487,15 @@
 						<input type="range" id="proceduralIntensitySlider" min="0" max="2" step="0.1" value="1.0">
 						<label class="features-toggle-label"><input type="checkbox" id="eyeSaccadesToggle" checked> <span class="lang-en">Micro Eye Saccades</span><span class="lang-ja">視線微動 (サッカード)</span></label>
 						<label class="features-toggle-label"><input type="checkbox" id="blinkToggle" checked> <span class="lang-en">Auto Blinking</span><span class="lang-ja">自動まばたき</span></label>
+					</div>
+				</div>
+
+				<div class="control-section">
+					<h3><span class="lang-en">Photo Mode & AR</span><span class="lang-ja">フォトモード & AR</span></h3>
+					<div class="features-section-col">
+						<button id="takePhotoBtn">📷 <span class="lang-en">Take Photo (PNG)</span><span class="lang-ja">写真を撮影 (PNG)</span></button>
+						<label class="features-toggle-label"><input type="checkbox" id="photoTransparentToggle"> <span class="lang-en">Transparent Background</span><span class="lang-ja">背景を透過して保存</span></label>
+						<button id="enterArBtn" style="margin-top:6px;background:linear-gradient(135deg,#38ef7d,#11998e);">🥽 <span class="lang-en">Enter AR Mode (WebXR)</span><span class="lang-ja">ARモードを開始 (WebXR)</span></button>
 					</div>
 				</div>
 			</div>
@@ -471,7 +513,12 @@
 					"vrm-viewer/boneConfig": "./src/boneConfig.js",
 					"vrm-viewer/settings": "./src/settings.js",
 					"vrm-viewer/hotkeys": "./src/hotkeys.js",
-					"vrm-viewer/vrmInfo": "./src/vrmInfo.js"
+					"vrm-viewer/vrmInfo": "./src/vrmInfo.js",
+					"vrm-viewer/photo": "./src/photo.js",
+					"vrm-viewer/skybox": "./src/skybox.js",
+					"vrm-viewer/cameraPresets": "./src/cameraPresets.js",
+					"vrm-viewer/ar": "./src/ar.js",
+					"vrm-viewer/materials": "./src/materials.js"
 				}
 			}
 		</script>
@@ -487,6 +534,11 @@
 			import { loadPrefs, savePrefs } from 'vrm-viewer/settings';
 			import { initHotkeys, registerHotkey, showHelp } from 'vrm-viewer/hotkeys';
 			import { extractVRMInfo, renderVRMInfoCard } from 'vrm-viewer/vrmInfo';
+			import { captureScreenshot } from 'vrm-viewer/photo';
+			import { setBackgroundColor, setSkyboxSource, setBackgroundBlur, setBackgroundRotation } from 'vrm-viewer/skybox';
+			import { applyCameraPreset, setCameraFOV } from 'vrm-viewer/cameraPresets';
+			import { startARSession, updateARFrame, placeVRMAtReticle, isARRunning } from 'vrm-viewer/ar';
+			import { setWireframeMode, setShadowsEnabled } from 'vrm-viewer/materials';
 
 			// DOM elements
 			const vrmaButtonsContainer = document.getElementById('vrmaButtons');
@@ -1766,6 +1818,71 @@
 				controls.update();
 				renderer.render( scene, camera );
 			}
+
+			// --- Camera Framing Presets & FOV ---
+			document.getElementById('camHeadBtn')?.addEventListener('click', () => applyCameraPreset(camera, controls, 'head'));
+			document.getElementById('camUpperBtn')?.addEventListener('click', () => applyCameraPreset(camera, controls, 'upperBody'));
+			document.getElementById('camFullBtn')?.addEventListener('click', () => applyCameraPreset(camera, controls, 'fullBody'));
+			document.getElementById('camResetBtn')?.addEventListener('click', () => applyCameraPreset(camera, controls, 'reset'));
+
+			const cameraFovSlider = document.getElementById('cameraFovSlider');
+			const cameraFovVal = document.getElementById('cameraFovVal');
+			cameraFovSlider?.addEventListener('input', (e) => {
+				const fov = parseInt(e.target.value, 10);
+				setCameraFOV(camera, fov);
+				if (cameraFovVal) cameraFovVal.textContent = `${fov}°`;
+			});
+
+			// --- Skybox & Background Controls ---
+			const bgColorPicker = document.getElementById('bgColorPicker');
+			bgColorPicker?.addEventListener('input', (e) => setBackgroundColor(scene, e.target.value));
+
+			const uploadSkyboxBtn = document.getElementById('uploadSkyboxBtn');
+			const skyboxFileInput = document.getElementById('skyboxFileInput');
+			uploadSkyboxBtn?.addEventListener('click', () => skyboxFileInput?.click());
+			skyboxFileInput?.addEventListener('change', async (e) => {
+				const file = e.target.files?.[0];
+				if (file) {
+					await setSkyboxSource(scene, renderer, file);
+					skyboxFileInput.value = '';
+				}
+			});
+
+			const skyboxBlurSlider = document.getElementById('skyboxBlurSlider');
+			const skyboxBlurVal = document.getElementById('skyboxBlurVal');
+			skyboxBlurSlider?.addEventListener('input', (e) => {
+				const blur = parseFloat(e.target.value);
+				setBackgroundBlur(scene, blur);
+				if (skyboxBlurVal) skyboxBlurVal.textContent = blur.toFixed(2);
+			});
+
+			const skyboxRotationSlider = document.getElementById('skyboxRotationSlider');
+			const skyboxRotationVal = document.getElementById('skyboxRotationVal');
+			skyboxRotationSlider?.addEventListener('input', (e) => {
+				const deg = parseInt(e.target.value, 10);
+				setBackgroundRotation(scene, deg);
+				if (skyboxRotationVal) skyboxRotationVal.textContent = `${deg}°`;
+			});
+
+			// --- Rendering & Material Effects ---
+			document.getElementById('wireframeToggle')?.addEventListener('change', (e) => setWireframeMode(currentVrm, e.target.checked));
+			document.getElementById('shadowsToggle')?.addEventListener('change', (e) => setShadowsEnabled(renderer, scene, currentVrm, e.target.checked));
+
+			// --- Photo Mode ---
+			document.getElementById('takePhotoBtn')?.addEventListener('click', () => {
+				const transparent = document.getElementById('photoTransparentToggle')?.checked ?? false;
+				captureScreenshot(renderer, scene, camera, { transparent, filename: 'vrm-photo.png' });
+			});
+
+			// --- WebXR AR Mode ---
+			document.getElementById('enterArBtn')?.addEventListener('click', async () => {
+				const ok = await startARSession(renderer, scene, camera);
+				if (!ok) {
+					setStatus('WebXR AR not supported on this device/browser', 'このブラウザ/デバイスはWebXR ARに対応していません');
+				} else {
+					setStatus('AR Mode Active — Tap floor to position model', 'ARモード実行中 — 床をタップしてモデルを配置');
+				}
+			});
 
 			// Start the animation loop
 			animate();
