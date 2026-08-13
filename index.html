@@ -2,13 +2,13 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<title>three-vrm with VRMA animation</title>
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1.0"
-		/>
+		<title>VRM Viewer</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="description" content="A web-based VRM model viewer with pose editing, facial expressions, gaze control, and VRMA animation support." />
+		<meta property="og:title" content="VRM Viewer" />
+		<meta property="og:description" content="Load and animate VRM 1.0 avatars in your browser. No installation required." />
+		<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>" />
 		<style>
-
 			body { margin: 0; font-family: 'Inter', sans-serif; overflow: hidden; }
 			canvas { display: block; width: 100vw; height: 100vh; }
 			.controls {
@@ -252,6 +252,11 @@
 				overflow-x: hidden;
 				padding-right: 4px;
 			}
+			.pose-placeholder {
+				font-size: 12px;
+				color: #aaa;
+				padding: 10px 0;
+			}
 			.bone-group-title {
 				margin: 6px 0 2px;
 				font-size: 12px;
@@ -296,16 +301,29 @@
 				text-align: center;
 			}
 
-		
 			.features-section-col { display: flex; flex-direction: column; gap: 5px; }
 			.features-label { font-size: 11px; }
 			.features-toggle-label { font-size: 11px; display: flex; align-items: center; gap: 5px; }
-			.lang-switch { position: absolute; top: 10px; right: 10px; z-index: 1000; color: white; background: #333; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-family: sans-serif; font-size: 12px; }
+			
+			.lang-switch {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				z-index: 1000;
+				color: white;
+				background: #333;
+				padding: 5px 10px;
+				text-decoration: none;
+				border-radius: 4px;
+				font-family: sans-serif;
+				font-size: 12px;
+				cursor: pointer;
+				border: none;
+			}
 
 			:lang(en) .lang-ja { display: none !important; }
 			:lang(ja) .lang-en { display: none !important; }
-			.lang-switch { position: absolute; top: 10px; right: 10px; z-index: 1000; color: white; background: #333; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-family: sans-serif; font-size: 12px; cursor: pointer; border: none; }
-</style>
+		</style>
 	
 		<script>
 			// Auto-detect language
@@ -321,22 +339,24 @@
 				sessionStorage.setItem('langSet', nextLang);
 			}
 		</script>
-</head>
+	</head>
 
 	<body>
 		<button class="lang-switch" onclick="toggleLang()"><span class="lang-en">日本語</span><span class="lang-ja">English</span></button>
-		<div id="dragOverlay">Drop VRM or VRMA here</div>
+		<div id="dragOverlay">
+			<span class="lang-en">Drop VRM or VRMA here</span>
+			<span class="lang-ja">VRM または VRMA をドロップ</span>
+		</div>
 		<div id="infoPanel">
 			<h3><span class="lang-en">Model Info</span><span class="lang-ja">モデル情報</span></h3>
-			<div class="info-row"><span class="info-label">Format:</span><span class="info-value" id="infoFormat">-</span></div>
-			<div class="info-row"><span class="info-label">File Size:</span><span class="info-value" id="infoSize">-</span></div>
-			<div class="info-row"><span class="info-label">Polygons:</span><span class="info-value" id="infoPolygons">-</span></div>
-			<div class="info-row"><span class="info-label">Meshes:</span><span class="info-value" id="infoMeshes">-</span></div>
-			<div class="info-row"><span class="info-label">Sub-meshes:</span><span class="info-value" id="infoSubmeshes">-</span></div>
-			<div class="info-row"><span class="info-label">Materials:</span><span class="info-value" id="infoMaterials">-</span></div>
-			<div class="info-row"><span class="info-label">Textures:</span><span class="info-value" id="infoTextures">-</span></div>
-			<div class="info-row"><span class="info-label">Bones:</span><span class="info-value" id="infoBones">-</span></div>
-			<div class="info-row"><span class="info-label">Blendshapes:</span><span class="info-value" id="infoBlendshapes">-</span></div>
+			<div class="info-row"><span class="info-label"><span class="lang-en">Format:</span><span class="lang-ja">形式:</span></span><span class="info-value" id="infoFormat">-</span></div>
+			<div class="info-row"><span class="info-label"><span class="lang-en">Polygons:</span><span class="lang-ja">ポリゴン数:</span></span><span class="info-value" id="infoPolygons">-</span></div>
+			<div class="info-row"><span class="info-label"><span class="lang-en">Meshes:</span><span class="lang-ja">メッシュ数:</span></span><span class="info-value" id="infoMeshes">-</span></div>
+			<div class="info-row"><span class="info-label"><span class="lang-en">Sub-meshes:</span><span class="lang-ja">サブメッシュ:</span></span><span class="info-value" id="infoSubmeshes">-</span></div>
+			<div class="info-row"><span class="info-label"><span class="lang-en">Materials:</span><span class="lang-ja">マテリアル:</span></span><span class="info-value" id="infoMaterials">-</span></div>
+			<div class="info-row"><span class="info-label"><span class="lang-en">Textures:</span><span class="lang-ja">テクスチャ:</span></span><span class="info-value" id="infoTextures">-</span></div>
+			<div class="info-row"><span class="info-label"><span class="lang-en">Bones:</span><span class="lang-ja">ボーン数:</span></span><span class="info-value" id="infoBones">-</span></div>
+			<div class="info-row"><span class="info-label"><span class="lang-en">Blendshapes:</span><span class="lang-ja">ブレンドシェイプ:</span></span><span class="info-value" id="infoBlendshapes">-</span></div>
 		</div>
 
 		<button id="panelToggleBtn" title="Hide controls" aria-expanded="true" aria-controls="controlsPanel">☰</button>
@@ -350,45 +370,44 @@
 
 			<div id="animationPanel" class="tab-panel">
 				<div>
-					<label>VRM Model:</label>
+					<label><span class="lang-en">VRM Model:</span><span class="lang-ja">VRMモデル:</span></label>
 					<span id="vrmName">sample.vrm</span>
-					<button id="openFileBtn">Open .vrm / .vrma...</button>
+					<button id="openFileBtn"><span class="lang-en">Open .vrm / .vrma...</span><span class="lang-ja">ファイルを開く (.vrm / .vrma)...</span></button>
 					<input type="file" id="filePicker" accept=".vrm,.vrma" multiple hidden />
 				</div>
 				<div id="vrmaButtons">
-					<label>VRMA Animations:</label>
+					<label><span class="lang-en">VRMA Animations:</span><span class="lang-ja">VRMAアニメーション:</span></label>
 				</div>
 				<div>
-					<button id="playBtn" disabled>Play</button>
-					<button id="pauseBtn" disabled>Pause</button>
-					<button id="stopBtn" disabled>Stop</button>
+					<button id="playBtn" disabled><span class="lang-en">Play</span><span class="lang-ja">再生</span></button>
+					<button id="pauseBtn" disabled><span class="lang-en">Pause</span><span class="lang-ja">一時停止</span></button>
+					<button id="stopBtn" disabled><span class="lang-en">Stop</span><span class="lang-ja">停止</span></button>
 				</div>
 			</div>
 
 			<div id="posePanel" class="tab-panel" hidden>
 				<div>
-					<button id="resetPoseBtn">Reset Pose</button>
-					<label class="inline-toggle"><input type="checkbox" id="handlesToggle" checked /> 3D Bone Handles</label>
+					<button id="resetPoseBtn"><span class="lang-en">Reset Pose</span><span class="lang-ja">ポーズリセット</span></button>
+					<label class="inline-toggle"><input type="checkbox" id="handlesToggle" checked /> <span class="lang-en">3D Bone Handles</span><span class="lang-ja">3Dボーンハンドル</span></label>
 				</div>
 				<div id="poseSliders"></div>
 				<details class="detail-bones">
-					<summary><span class="lang-en">Show fingers/detail bones</span><span class="lang-ja">指・詳細ボーンを表示</span> (fingers / detail bones)</summary>
+					<summary><span class="lang-en">Show fingers / detail bones</span><span class="lang-ja">指・詳細ボーンを表示</span></summary>
 					<div id="poseSlidersDetail"></div>
 				</details>
 			</div>
 
 			<div id="facePanel" class="tab-panel" hidden>
 				<div>
-					<button id="resetFaceBtn">Reset Face</button>
+					<button id="resetFaceBtn"><span class="lang-en">Reset Face</span><span class="lang-ja">表情リセット</span></button>
 				</div>
 				<h4 class="bone-group-title"><span class="lang-en">Expressions</span><span class="lang-ja">表情</span></h4>
 				<div id="expressionSliders"></div>
-				<h4 class="bone-group-title">Look At</h4>
+				<h4 class="bone-group-title"><span class="lang-en">Look At</span><span class="lang-ja">視線移動</span></h4>
 				<div id="lookAtSliders"></div>
-				<label class="inline-toggle"><input type="checkbox" id="followMouseToggle" /> Follow Mouse</label>
+				<label class="inline-toggle"><input type="checkbox" id="followMouseToggle" /> <span class="lang-en">Follow Mouse</span><span class="lang-ja">マウス追従</span></label>
 			</div>
 
-			
 			<div id="featuresPanel" class="tab-panel" hidden>
 				<div class="control-section">
 					<h3><span class="lang-en">Lighting</span><span class="lang-ja">ライティング</span></h3>
@@ -456,11 +475,29 @@
 			const resetFaceBtn = document.getElementById('resetFaceBtn');
 			const followMouseToggle = document.getElementById('followMouseToggle');
 
+			// Helper for bilingual status messages
+			function setStatus(enText, jaText) {
+				statusDiv.innerHTML = `<span class="lang-en">${enText}</span><span class="lang-ja">${jaText || enText}</span>`;
+			}
+
+			// Object URL registry to prevent memory leaks
+			const userObjectUrls = [];
+			function trackObjectUrl(url) {
+				userObjectUrls.push(url);
+				return url;
+			}
+			function revokeObjectUrls() {
+				while (userObjectUrls.length > 0) {
+					const url = userObjectUrls.pop();
+					URL.revokeObjectURL(url);
+				}
+			}
+
 			// --- Three.js Setup ---
 			const renderer = new THREE.WebGLRenderer({ antialias: true });
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			renderer.setPixelRatio( window.devicePixelRatio );
-			renderer.outputColorSpace = THREE.SRGBColorSpace; // Correct color space
+			renderer.outputColorSpace = THREE.SRGBColorSpace;
 			document.body.appendChild( renderer.domElement );
 
 			const camera = new THREE.PerspectiveCamera( 30.0, window.innerWidth / window.innerHeight, 0.1, 20.0 );
@@ -472,21 +509,21 @@
 			controls.update();
 
 			const scene = new THREE.Scene();
-			scene.background = new THREE.Color(0x222222); // Darker background
+			scene.background = new THREE.Color(0x222222);
 
-			const light = new THREE.DirectionalLight( 0xffffff, 3.0 ); // Increased intensity
+			const light = new THREE.DirectionalLight( 0xffffff, 3.0 );
 			light.position.set( 1.0, 1.0, 1.0 ).normalize();
 			scene.add( light );
 
-			const ambientLight = new THREE.AmbientLight( 0xffffff, 1.0 ); // Brighter ambient light
+			const ambientLight = new THREE.AmbientLight( 0xffffff, 1.0 );
 			scene.add( ambientLight );
 
 			// --- Global Variables for VRM and Animation ---
 			let currentVrm = undefined;
 			let currentMixer = undefined;
 			let currentAction = undefined;
-			let vrmaAnimationClip = undefined; // Store the final THREE.AnimationClip
-			const CROSSFADE_DURATION = 0.5; // seconds, for blending between animations
+			let vrmaAnimationClip = undefined;
+			const CROSSFADE_DURATION = 0.5;
 
 			// --- GLTF Loader with VRM and VRMA Plugins ---
 			const loader = new GLTFLoader();
@@ -501,8 +538,8 @@
 			} );
 
 			// --- File Paths ---
-			const VRM_MODEL_URL = './VRM/sample.vrm'; // Fixed VRM model path (relative path)
-			const VRMA_ANIMATIONS = [ // Bundled VRMA animations (name + relative path)
+			const VRM_MODEL_URL = './VRM/sample.vrm';
+			const VRMA_ANIMATIONS = [
 				{ name: 'Angry', url: './VRMA/Angry.vrma' },
 				{ name: 'Blush', url: './VRMA/Blush.vrma' },
 				{ name: 'Clapping', url: './VRMA/Clapping.vrma' },
@@ -516,31 +553,20 @@
 				{ name: 'Thinking', url: './VRMA/Thinking.vrma' },
 			];
 
-			/**
-			 * Creates and appends a VRMA selection button, wired to selectAnimation(url).
-			 * @param {string} name Display name for the button.
-			 * @param {string} url URL (relative path or object URL) of the .vrma file.
-			 */
 			function addVrmaButton(name, url) {
 				const button = document.createElement('button');
 				button.className = 'vrma-btn';
 				button.textContent = name;
-				button.title = name; // full name on hover, since long labels are ellipsized
+				button.title = name;
 				button.disabled = currentVrm === undefined;
 				button.addEventListener('click', () => selectAnimation(url));
 				vrmaButtonsContainer.appendChild(button);
 			}
 
 			// --- File Loading Functions ---
-			/**
-			 * Loads a VRM model from a specified URL.
-			 * @param {string} url The URL of the VRM file.
-			 * @param {string} [displayName] Name to show in the UI (defaults to the URL).
-			 * @returns {Promise<any>} A promise that resolves with the loaded VRM.
-			 */
 			async function loadVRM(url, displayName = url) {
 				try {
-					statusDiv.textContent = 'Loading VRM model...';
+					setStatus('Loading VRM model...', 'VRMモデルを読み込み中...');
 
 					return new Promise((resolve, reject) => {
 						loader.load(
@@ -548,26 +574,21 @@
 							(gltf) => {
 								const vrm = gltf.userData.vrm;
 
-								// Apply performance optimizations
 								VRMUtils.removeUnnecessaryVertices( gltf.scene );
 								VRMUtils.combineSkeletons( gltf.scene );
 								VRMUtils.combineMorphs( vrm );
 
-								// Disable frustum culling for all objects in the VRM scene
 								vrm.scene.traverse( ( obj ) => {
 									obj.frustumCulled = false;
 								} );
 
-								// Remove previous VRM if one is loaded
 								if (currentVrm) {
-									deselectBone(); // Detach the gizmo before the bone it references is disposed
+									deselectBone();
 									scene.remove(currentVrm.scene);
-									VRMUtils.deepDispose(currentVrm.scene); // Dispose of the previous VRM's geometries/materials/textures
+									VRMUtils.deepDispose(currentVrm.scene);
+									revokeObjectUrls();
 								}
 
-								// Clear animation state tied to the old VRM: a clip generated by
-								// createVRMAnimationClip() targets a specific VRM's node hierarchy
-								// and must not be replayed against a different model.
 								if (currentAction) {
 									currentAction.stop();
 									currentAction = undefined;
@@ -575,23 +596,17 @@
 								vrmaAnimationClip = undefined;
 
 								scene.add( vrm.scene );
-								vrm.scene.rotation.y = Math.PI; // ăƒ¢ăƒ‡ăƒ«ă‚’æ­£é¢ă«å›è»¢
+								vrm.scene.rotation.y = Math.PI; // Rotate model to face front
 								currentVrm = vrm;
 
-								// Create a new AnimationMixer for the current VRM
 								currentMixer = new THREE.AnimationMixer( vrm.scene );
 
-								// Rebuild the pose UI/handles against the new VRM's humanoid bones
-								// (the set of optional bones present can differ between models).
 								buildPoseUI();
 								if (activeTab === 'pose') {
 									syncAllSliders();
 									boneHandlesGroup.visible = handlesToggle.checked;
 								}
 
-								// Rebuild the face UI against the new VRM's expression set (also
-								// varies per model) and re-attach Follow Mouse if it was active
-								// (buildFaceUI() unchecks the toggle if the new VRM has no lookAt).
 								buildFaceUI();
 								if (followMouseToggle.checked && vrm.lookAt) {
 									vrm.lookAt.target = lookAtTarget;
@@ -599,12 +614,10 @@
 								if (activeTab === 'face') syncFaceUI();
 
 								vrmNameSpan.textContent = displayName;
-								statusDiv.innerHTML = '<span class="lang-en">VRM model loaded successfully!</span><span class="lang-ja">VRMモデルの読み込みが完了しました！</span>';
+								setStatus('VRM model loaded successfully!', 'VRMモデルの読み込みが完了しました！');
 								console.log( 'VRM loaded:', vrm );
 
-								// Update Info Panel
 								document.getElementById('infoFormat').textContent = 'VRM 1.0/0.0';
-								// We don't have exact file size easily here, but we can compute polygon counts
 								let polygons = 0, meshes = 0, submeshes = 0, materials = new Set(), textures = new Set(), bones = 0;
 								vrm.scene.traverse((obj) => {
 									if (obj.isMesh) {
@@ -635,38 +648,32 @@
 								document.getElementById('infoBones').textContent = bones;
 								document.getElementById('infoBlendshapes').textContent = vrm.expressionManager ? vrm.expressionManager.expressions.length : 0;
 
-
 								resolve(vrm);
 							},
 							(progress) => {
 								const percent = (100.0 * ( progress.loaded / progress.total )).toFixed(1);
-								statusDiv.innerHTML = `<span class="lang-en">Loading VRM model... ${percent}%</span><span class="lang-ja">VRMモデルを読み込み中... ${percent}%</span>`;
+								setStatus(`Loading VRM model... ${percent}%`, `VRMモデルを読み込み中... ${percent}%`);
 							},
 							(error) => {
 								console.error('Error loading VRM:', error);
-								statusDiv.textContent = 'Error loading VRM model';
+								setStatus('Error loading VRM model', 'VRMモデルの読み込みエラー');
 								reject(error);
 							}
 						);
 					});
 				} catch (error) {
 					console.error('Error in loadVRM:', error);
-								statusDiv.textContent = 'Error loading VRM model';
+					setStatus('Error loading VRM model', 'VRMモデルの読み込みエラー');
 				}
 			}
 
-			/**
-			 * Loads a VRMA animation from a specified URL and converts it to a THREE.AnimationClip.
-			 * @param {string} url The URL of the VRMA file.
-			 * @returns {Promise<THREE.AnimationClip>} A promise that resolves with the generated AnimationClip.
-			 */
 			async function loadVRMA(url) {
 				if (!currentVrm) {
-								statusDiv.textContent = 'Action completed.';
+					setStatus('No VRM model loaded.', 'VRMモデルが読み込まれていません。');
 					throw new Error('No VRM model loaded.');
 				}
 
-					statusDiv.textContent = 'Loading VRM model...';
+				setStatus('Loading animation...', 'アニメーションを読み込み中...');
 
 				return new Promise((resolve, reject) => {
 					loader.load(
@@ -674,36 +681,33 @@
 						(gltf) => {
 							console.log('GLTF loaded (VRMA):', gltf);
 
-							// gltf.userData.vrmAnimations[0] contains the raw VRMAnimation data object
 							const vrmAnimationData = gltf.userData.vrmAnimations && gltf.userData.vrmAnimations[0];
 
 							if (vrmAnimationData) {
-								// Call the standalone createVRMAnimationClip function
-								// It takes the VRMAnimation data object and the current VRM model
 								const clip = createVRMAnimationClip(vrmAnimationData, currentVrm);
 
 								if (clip) {
-								statusDiv.textContent = 'VRM model loaded!';
+									setStatus('Animation loaded successfully!', 'アニメーションの読み込みが完了しました！');
 									console.log('Generated AnimationClip:', clip);
 									resolve(clip);
 								} else {
 									const err = new Error('Could not create AnimationClip from VRMA data.');
-									statusDiv.textContent = err.message;
+									setStatus(err.message, err.message);
 									reject(err);
 								}
 							} else {
-									const err = new Error('Could not create AnimationClip from VRMA data.');
-								statusDiv.textContent = err.message;
+								const err = new Error('Could not create AnimationClip from VRMA data.');
+								setStatus(err.message, err.message);
 								reject(err);
 							}
 						},
 						(progress) => {
 							const percent = (100.0 * ( progress.loaded / progress.total )).toFixed(1);
-								statusDiv.textContent = `Loading VRM model... ${percent}%`;
+							setStatus(`Loading animation... ${percent}%`, `アニメーションを読み込み中... ${percent}%`);
 						},
 						(error) => {
 							console.error('Error loading animation:', error);
-								statusDiv.textContent = 'Error loading VRM model';
+							setStatus('Error loading animation', 'アニメーションの読み込みエラー');
 							reject(error);
 						}
 					);
@@ -711,15 +715,11 @@
 			}
 
 			// --- Animation Control Functions ---
-			/**
-			 * Starts playing the loaded VRMA animation.
-			 */
 			function playAnimation() {
 				if (currentVrm && vrmaAnimationClip && currentMixer) {
-					// Re-pressing Play on the already-active clip just resumes it.
 					if (currentAction && currentAction.getClip() === vrmaAnimationClip) {
 						currentAction.paused = false;
-								statusDiv.textContent = 'Action completed.';
+						setStatus('Playback resumed.', '再生を再開しました。');
 						return;
 					}
 
@@ -729,20 +729,15 @@
 						const oldAction = currentAction;
 						const mixer = currentMixer;
 
-						// Create and configure animation action from the generated clip
 						const newAction = mixer.clipAction(vrmaAnimationClip);
-						newAction.setLoop(THREE.LoopRepeat); // Loop the animation
-						newAction.clampWhenFinished = true; // Stay at the last frame when finished
+						newAction.setLoop(THREE.LoopRepeat);
+						newAction.clampWhenFinished = true;
 						newAction.reset();
 
 						if (oldAction) {
-							// Blend smoothly from the previous animation instead of snapping to T-pose.
 							newAction.crossFadeFrom(oldAction, CROSSFADE_DURATION, false);
 							newAction.play();
 
-							// The old clip is discarded after every load (a fresh clip object is
-							// created each time), so its cached action is garbage once the fade
-							// finishes. Uncache it then, not before, so the fade isn't interrupted.
 							const oldClip = oldAction.getClip();
 							setTimeout(() => {
 								if (currentMixer === mixer && (!currentAction || currentAction.getClip() !== oldClip)) {
@@ -750,50 +745,32 @@
 								}
 							}, CROSSFADE_DURATION * 1000 + 100);
 						} else {
-							// First-ever play (or after Stop/pose editing): no fade partner, start immediately.
-							// Any pose-tab edits made while no action was active are intentionally
-							// discarded here - the animation now drives the skeleton, not blended.
 							newAction.play();
 						}
 
 						currentAction = newAction;
-
-								statusDiv.textContent = 'Action completed.';
+						setStatus('Playing animation.', 'アニメーション再生中。');
 						console.log('Animation started successfully.');
 					} catch (error) {
 						console.error('Error playing animation:', error);
-								statusDiv.textContent = 'Error loading VRM model';
+						setStatus('Error playing animation', 'アニメーション再生エラー');
 					}
-				} else {
-								statusDiv.textContent = 'Action completed.';
 				}
 			}
 
-			/**
-			 * Toggles the pause state of the animation.
-			 */
 			function pauseAnimation() {
 				if (currentAction) {
 					currentAction.paused = !currentAction.paused;
-								statusDiv.textContent = 'Action completed.';
+					setStatus(currentAction.paused ? 'Playback paused.' : 'Playback resumed.', currentAction.paused ? '一時停止中。' : '再生を再開しました。');
 				}
 			}
 
-			/**
-			 * Stops the animation and resets the model's pose.
-			 */
 			function stopAnimation() {
 				if (currentAction) {
 					currentAction.stop();
 					currentAction = undefined;
-					currentMixer.stopAllAction(); // Stop all actions on the mixer
+					currentMixer.stopAllAction();
 
-					// Reset every rig layer Stop is expected to return to rest: bones (both
-					// normalized and raw - vrm.update() copies normalized onto raw every
-					// frame, so resetting only one lets the other snap it back), expression
-					// weights, and look-at yaw/pitch (resetting the eye bones doesn't touch
-					// lookAt's own stored yaw/pitch, which would otherwise disagree with the
-					// now-rest eyes until the next gaze change).
 					if (currentVrm) {
 						currentVrm.humanoid.resetNormalizedPose();
 						currentVrm.humanoid.resetRawPose();
@@ -802,51 +779,39 @@
 						if (activeTab === 'pose') syncAllSliders();
 						if (activeTab === 'face') syncFaceUI();
 					}
-								statusDiv.textContent = 'Action completed.';
+					setStatus('Animation stopped.', 'アニメーションを停止しました。');
 				}
 			}
 
 			// --- UI and Event Handlers ---
-			/**
-			 * Updates the state of the control buttons based on loaded files.
-			 */
 			function updateButtons() {
 				const hasVrm = currentVrm !== undefined;
 				const hasVrma = vrmaAnimationClip !== undefined;
 
-				// Enable VRMA selection buttons once VRM is loaded
 				vrmaButtonsContainer.querySelectorAll('.vrma-btn').forEach(btn => {
 					btn.disabled = !hasVrm;
 				});
 
-				// Enable play/pause/stop buttons only if both VRM and an animation are loaded
 				playBtn.disabled = !(hasVrm && hasVrma);
 				pauseBtn.disabled = !(hasVrm && hasVrma);
 				stopBtn.disabled = !(hasVrm && hasVrma);
 			}
 
-			// Monotonically increasing token so that a rapid second click discards
-			// the result of a slower, now-stale in-flight load rather than racing it.
 			let vrmaLoadToken = 0;
 
-			/**
-			 * Loads the VRMA animation at `url` and makes it the active clip.
-			 * If an animation is currently playing, crossfades directly into it.
-			 * @param {string} url The URL of the .vrma file.
-			 */
 			async function selectAnimation(url) {
 				const token = ++vrmaLoadToken;
 				vrmaAnimationClip = undefined;
-				updateButtons(); // Disable Play/Pause/Stop while the new clip loads
+				updateButtons();
 
 				try {
 					const clip = await loadVRMA(url);
-					if (token !== vrmaLoadToken) return; // superseded by a newer click
+					if (token !== vrmaLoadToken) return;
 
 					vrmaAnimationClip = clip;
 
 					if (currentAction) {
-						playAnimation(); // Already playing: blend straight into the new clip
+						playAnimation();
 					}
 				} catch (error) {
 					console.error('Error selecting animation:', error);
@@ -855,41 +820,29 @@
 				}
 			}
 
-			// Add the bundled VRMA animation buttons
 			VRMA_ANIMATIONS.forEach(({ name, url }) => addVrmaButton(name, url));
 
 			playBtn.addEventListener('click', playAnimation);
 			pauseBtn.addEventListener('click', pauseAnimation);
 			stopBtn.addEventListener('click', stopAnimation);
 
-			// --- User File Loading (file picker + drag-and-drop) ---
-			/**
-			 * Loads user-supplied .vrm/.vrma files (from the file picker or a drop event).
-			 * @param {FileList|File[]} fileList Files to load.
-			 */
 			async function handleFiles(fileList) {
 				for (const file of fileList) {
 					const lower = file.name.toLowerCase();
 
 					if (lower.endsWith('.vrm')) {
-						const url = URL.createObjectURL(file);
-						try {
-							await loadVRM(url, file.name);
-							updateButtons();
-						} finally {
-							URL.revokeObjectURL(url); // VRM is read once during load; safe to revoke after
-						}
+						const url = trackObjectUrl(URL.createObjectURL(file));
+						await loadVRM(url, file.name);
+						updateButtons();
 					} else if (lower.endsWith('.vrma')) {
-						// Not revoked: selectAnimation() re-fetches this URL every time its
-						// button is clicked, so the object URL must stay alive for the page's life.
-						const url = URL.createObjectURL(file);
+						const url = trackObjectUrl(URL.createObjectURL(file));
 						addVrmaButton(file.name.replace(/\.vrma$/i, ''), url);
 						updateButtons();
 						if (currentVrm) {
 							await selectAnimation(url);
 						}
 					} else {
-								statusDiv.textContent = 'Action completed.';
+						setStatus('Unsupported file format.', '非対応のファイル形式です。');
 					}
 				}
 			}
@@ -897,32 +850,27 @@
 			openFileBtn.addEventListener('click', () => filePicker.click());
 			filePicker.addEventListener('change', async (e) => {
 				await handleFiles(e.target.files);
-				filePicker.value = ''; // allow re-selecting the same file later
+				filePicker.value = '';
 			});
 
 			window.addEventListener('dragover', (e) => {
 				e.preventDefault();
-								statusDiv.textContent = 'Action completed.';
 			});
 			window.addEventListener('drop', async (e) => {
 				e.preventDefault();
 				await handleFiles(e.dataTransfer.files);
 			});
 
-			// Pure visibility toggle for the control panel - intentionally does not
-			// touch activeTab/isEditMode/animation state: nothing else in the app
-			// reads the panel's visibility, so hiding it never pauses playback,
-			// resets pose/face edits, detaches the gizmo, or disables Follow Mouse.
 			panelToggleBtn.addEventListener('click', () => {
-		const isHidden = controlsPanel.hasAttribute('hidden');
-		if (isHidden) {
-			controlsPanel.removeAttribute('hidden');
-			document.getElementById('infoPanel').classList.remove('hidden');
-		} else {
-			controlsPanel.setAttribute('hidden', '');
-			document.getElementById('infoPanel').classList.add('hidden');
-		}
-	});
+				const isHidden = controlsPanel.hasAttribute('hidden');
+				if (isHidden) {
+					controlsPanel.removeAttribute('hidden');
+					document.getElementById('infoPanel').classList.remove('hidden');
+				} else {
+					controlsPanel.setAttribute('hidden', '');
+					document.getElementById('infoPanel').classList.add('hidden');
+				}
+			});
 
 			window.addEventListener('resize', () => {
 				camera.aspect = window.innerWidth / window.innerHeight;
@@ -941,9 +889,6 @@
 			// --- Pose Editing: bone metadata, sliders, viewport handles, gizmo ---
 			// =====================================================================
 
-			// Groups of VRM Humanoid bone names. `detail: true` groups render inside
-			// the collapsed <details> disclosure; the rest are always visible.
-			// Bone name spellings follow the VRM 1.0 humanoid spec.
 			const POSE_BONE_GROUPS = [
 				{ label: 'Body', detail: false, bones: ['hips', 'spine', 'chest', 'neck', 'head'] },
 				{ label: 'Left Arm', detail: false, bones: ['leftShoulder', 'leftUpperArm', 'leftLowerArm', 'leftHand'] },
@@ -971,13 +916,8 @@
 				},
 			];
 
-			// Major bones get a draggable 3D handle in the viewport; fingers/detail
-			// bones are slider-only (handles for them would be sub-pixel clutter).
 			const HANDLE_BONES = POSE_BONE_GROUPS.filter(g => !g.detail).flatMap(g => g.bones);
 
-			// Per-axis rotation limits in degrees, keyed by bone "category". Values
-			// are generous joint-appropriate ranges for a normalized (identity rest
-			// rotation) humanoid rig, not biomechanically exact limits.
 			const BONE_AXIS_LIMITS = {
 				hips:     { x: [-180, 180], y: [-180, 180], z: [-180, 180] },
 				spine:    { x: [-30, 30],   y: [-30, 30],   z: [-30, 30] },
@@ -997,7 +937,6 @@
 				default:  { x: [-90, 90],   y: [-90, 90],   z: [-90, 90] },
 			};
 
-			/** Maps a VRM humanoid bone name to a BONE_AXIS_LIMITS category key. */
 			function getBoneCategory(boneName) {
 				if (boneName === 'hips') return 'hips';
 				if (boneName === 'spine' || boneName === 'chest' || boneName === 'upperChest') return 'spine';
@@ -1021,12 +960,11 @@
 				return BONE_AXIS_LIMITS[getBoneCategory(boneName)] || BONE_AXIS_LIMITS.default;
 			}
 
-			// --- Edit-mode state, shared by the Pose and Face tabs ---
 			let isEditMode = false;
-			let activeTab = 'animation'; // 'animation' | 'pose' | 'face'
+			let activeTab = 'animation';
 			let selectedBoneName = null;
-			const sliderRefs = new Map(); // boneName -> { row, inputs:{x,y,z}, readouts:{x,y,z} }
-			const handleByBone = new Map(); // boneName -> THREE.Mesh (viewport handle)
+			const sliderRefs = new Map();
+			const handleByBone = new Map();
 
 			const boneHandlesGroup = new THREE.Group();
 			boneHandlesGroup.visible = false;
@@ -1058,7 +996,6 @@
 				handleByBone.clear();
 			}
 
-			/** Moves each handle sphere to its bone's current world position. Called every frame in pose mode. */
 			function updateBoneHandles() {
 				if (!currentVrm) return;
 				handleByBone.forEach((mesh, boneName) => {
@@ -1067,11 +1004,6 @@
 				});
 			}
 
-			/**
-			 * Builds one bone-pose row: a label plus X/Y/Z rotation sliders (degrees).
-			 * @param {string} boneName VRM humanoid bone name.
-			 * @returns {HTMLDivElement}
-			 */
 			function buildBoneRow(boneName) {
 				const limits = getBoneLimits(boneName);
 				const row = document.createElement('div');
@@ -1116,7 +1048,6 @@
 				return row;
 			}
 
-			/** Rebuilds the entire Pose tab (sliders + viewport handles) for the currently loaded VRM. */
 			function buildPoseUI() {
 				poseSlidersContainer.innerHTML = '';
 				poseSlidersDetailContainer.innerHTML = '';
@@ -1125,13 +1056,13 @@
 				selectedBoneName = null;
 
 				if (!currentVrm) {
-				poseSlidersContainer.innerHTML = '<div class="pose-placeholder">Load a VRM model to see the list of bones.</div>';
+					poseSlidersContainer.innerHTML = '<div class="pose-placeholder"><span class="lang-en">Load a VRM model to see the list of bones.</span><span class="lang-ja">VRMモデルを読み込むとボーン一覧が表示されます。</span></div>';
 					return;
 				}
 
 				POSE_BONE_GROUPS.forEach((group) => {
 					const presentBones = group.bones.filter((name) => currentVrm.humanoid.getNormalizedBoneNode(name));
-					if (presentBones.length === 0) return; // this VRM lacks every bone in the group (e.g. no fingers)
+					if (presentBones.length === 0) return;
 
 					const targetContainer = group.detail ? poseSlidersDetailContainer : poseSlidersContainer;
 
@@ -1149,7 +1080,6 @@
 				});
 			}
 
-			/** Reads a bone's current rotation and reflects it in its sliders (radians -> degrees). */
 			function syncSlidersFromBone(boneName) {
 				const refs = sliderRefs.get(boneName);
 				if (!refs || !currentVrm) return;
@@ -1166,8 +1096,6 @@
 				sliderRefs.forEach((_refs, boneName) => syncSlidersFromBone(boneName));
 			}
 
-			// Single delegated listener handles every slider (present + future, major +
-			// detail), so rebuilding the pose UI on VRM swap never needs to re-bind events.
 			posePanel.addEventListener('input', (e) => {
 				const input = e.target;
 				if (!input.matches('input[type="range"][data-bone]')) return;
@@ -1198,12 +1126,9 @@
 			transformControls.setSize(0.4);
 			scene.add(transformControls.getHelper());
 
-			// Dragging a gizmo ring must not also orbit the camera.
 			transformControls.addEventListener('dragging-changed', (e) => {
 				controls.enabled = !e.value;
 			});
-			// Gizmo drag -> slider sync (the other direction is handled by the delegated
-			// slider `input` listener above, which writes straight to node.rotation).
 			transformControls.addEventListener('objectChange', () => {
 				if (selectedBoneName) syncSlidersFromBone(selectedBoneName);
 			});
@@ -1244,7 +1169,6 @@
 				transformControls.detach();
 			}
 
-			// --- Bone picking: click (not drag) a handle sphere to select its bone ---
 			const raycaster = new THREE.Raycaster();
 			const pointerNDC = new THREE.Vector2();
 			let pointerDownPos = null;
@@ -1257,12 +1181,12 @@
 				const downPos = pointerDownPos;
 				pointerDownPos = null;
 				if (activeTab !== 'pose' || !handlesToggle.checked) return;
-				if (transformControls.dragging || transformControls.axis) return; // gizmo owns this interaction
+				if (transformControls.dragging || transformControls.axis) return;
 				if (!downPos) return;
 
 				const dx = e.clientX - downPos.x;
 				const dy = e.clientY - downPos.y;
-				if (Math.hypot(dx, dy) > 5) return; // an orbit/pan drag, not a click
+				if (Math.hypot(dx, dy) > 5) return;
 
 				pointerNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
 				pointerNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -1286,8 +1210,6 @@
 			// --- Face Editing: expression sliders, look-at (gaze) control ---
 			// =====================================================================
 
-			// Preset expression names, grouped for a stable display order. Values come
-			// from the imported VRMExpressionPresetName so spellings can't drift.
 			const FACE_PRESET_GROUPS = [
 				{
 					label: 'Emotions', names: [
@@ -1314,14 +1236,9 @@
 				},
 			];
 
-			const expressionSliderRefs = new Map(); // expressionName -> { row, input, readout }
-			let lookAtRefs = null; // { yaw: {input, readout}, pitch: {input, readout} }
+			const expressionSliderRefs = new Map();
+			let lookAtRefs = null;
 
-			/**
-			 * Builds one expression row: a label plus a single 0-1 weight slider.
-			 * @param {string} name VRM expression name.
-			 * @returns {HTMLDivElement}
-			 */
 			function buildExpressionRow(name) {
 				const row = document.createElement('div');
 				row.className = 'face-row';
@@ -1351,19 +1268,13 @@
 				return row;
 			}
 
-			/**
-			 * Builds one Look At row (Yaw or Pitch): a label plus a -90..90 degree slider.
-			 * @param {'yaw'|'pitch'} axis
-			 * @param {string} label
-			 * @returns {{ row: HTMLDivElement, input: HTMLInputElement, readout: HTMLSpanElement }}
-			 */
-			function buildLookAtRow(axis, label) {
+			function buildLookAtRow(axis, labelEn, labelJa) {
 				const row = document.createElement('div');
 				row.className = 'face-row';
 
 				const labelSpan = document.createElement('span');
 				labelSpan.className = 'bone-label';
-				labelSpan.textContent = label;
+				labelSpan.innerHTML = `<span class="lang-en">${labelEn}</span><span class="lang-ja">${labelJa}</span>`;
 				row.appendChild(labelSpan);
 
 				const input = document.createElement('input');
@@ -1384,7 +1295,6 @@
 				return { row, input, readout };
 			}
 
-			/** Rebuilds the entire Face tab (expression sliders + look-at rows) for the currently loaded VRM. */
 			function buildFaceUI() {
 				expressionSlidersContainer.innerHTML = '';
 				expressionSliderRefs.clear();
@@ -1392,23 +1302,22 @@
 				lookAtRefs = null;
 
 				if (!currentVrm) {
-				expressionSlidersContainer.innerHTML = '<div class="pose-placeholder">Load a VRM model to see the list of expressions.</div>';
+					expressionSlidersContainer.innerHTML = '<div class="pose-placeholder"><span class="lang-en">Load a VRM model to see the list of expressions.</span><span class="lang-ja">VRMモデルを読み込むと表情一覧が表示されます。</span></div>';
 					followMouseToggle.disabled = true;
 					followMouseToggle.checked = false;
 					return;
 				}
 
-				// Expressions are an optional VRM extension; some models have none.
 				const expressionManager = currentVrm.expressionManager;
 				if (!expressionManager || expressionManager.expressions.length === 0) {
-				expressionSlidersContainer.innerHTML = '<div class="pose-placeholder">This model has no expressions defined.</div>';
+					expressionSlidersContainer.innerHTML = '<div class="pose-placeholder"><span class="lang-en">This model has no expressions defined.</span><span class="lang-ja">このモデルには定義された表情がありません。</span></div>';
 				} else {
 					const presetMap = expressionManager.presetExpressionMap;
 					const customMap = expressionManager.customExpressionMap;
 
 					FACE_PRESET_GROUPS.forEach((group) => {
 						const presentNames = group.names.filter((name) => presetMap[name]);
-						if (presentNames.length === 0) return; // this VRM lacks every preset in the group
+						if (presentNames.length === 0) return;
 
 						const heading = document.createElement('h4');
 						heading.className = 'bone-group-title';
@@ -1433,10 +1342,9 @@
 					}
 				}
 
-				// LookAt is also optional; disable gaze controls entirely if absent.
 				const hasLookAt = !!currentVrm.lookAt;
-				const yawRow = buildLookAtRow('yaw', 'Yaw (å·¦å³)');
-				const pitchRow = buildLookAtRow('pitch', 'Pitch (ä¸ä¸‹)');
+				const yawRow = buildLookAtRow('yaw', 'Yaw (Left/Right)', 'Yaw (左右)');
+				const pitchRow = buildLookAtRow('pitch', 'Pitch (Up/Down)', 'Pitch (上下)');
 				lookAtSlidersContainer.appendChild(yawRow.row);
 				lookAtSlidersContainer.appendChild(pitchRow.row);
 				lookAtRefs = { yaw: yawRow, pitch: pitchRow };
@@ -1447,7 +1355,6 @@
 				if (!hasLookAt) followMouseToggle.checked = false;
 			}
 
-			/** Reads each expression's current weight and reflects it in its slider. */
 			function syncExpressionSliders() {
 				if (!currentVrm || !currentVrm.expressionManager) return;
 				expressionSliderRefs.forEach((refs, name) => {
@@ -1457,7 +1364,6 @@
 				});
 			}
 
-			/** Reads the current look-at yaw/pitch and reflects it in the sliders. */
 			function syncLookAtSliders() {
 				if (!lookAtRefs || !currentVrm || !currentVrm.lookAt) return;
 				const { yaw, pitch } = currentVrm.lookAt;
@@ -1467,7 +1373,6 @@
 				lookAtRefs.pitch.readout.textContent = `${Math.round(pitch)}°`;
 			}
 
-			/** Disables the look-at sliders while Follow Mouse is actively driving gaze (they'd otherwise be overwritten within one frame of any drag). */
 			function applyFollowMouseSliderState() {
 				if (!lookAtRefs) return;
 				const hasLookAt = !!(currentVrm && currentVrm.lookAt);
@@ -1482,8 +1387,6 @@
 				applyFollowMouseSliderState();
 			}
 
-			// Single delegated listener for both expression sliders and look-at sliders
-			// (mirrors the Pose tab's one-listener-per-panel pattern).
 			facePanel.addEventListener('input', (e) => {
 				const input = e.target;
 				if (!currentVrm) return;
@@ -1495,7 +1398,7 @@
 					const refs = expressionSliderRefs.get(name);
 					if (refs) refs.readout.textContent = weight.toFixed(2);
 				} else if (input.matches('input[type="range"][data-lookat]') && currentVrm.lookAt) {
-					const axis = input.dataset.lookat; // 'yaw' | 'pitch'
+					const axis = input.dataset.lookat;
 					const deg = parseFloat(input.value);
 					currentVrm.lookAt[axis] = deg;
 					if (lookAtRefs) lookAtRefs[axis].readout.textContent = `${Math.round(deg)}°`;
@@ -1513,11 +1416,6 @@
 				syncFaceUI();
 			});
 
-			// --- Follow Mouse: gaze tracks the cursor, from any orbit angle ---
-			// A child of the camera so its world position is always "near the camera,
-			// offset sideways/vertically by cursor position" - the standard three-vrm
-			// lookAt-the-mouse trick. Updating its position is cheap and harmless even
-			// when nothing is following it (vrm.lookAt.target is null until toggled on).
 			const lookAtTarget = new THREE.Object3D();
 			camera.add(lookAtTarget);
 
@@ -1544,17 +1442,6 @@
 			// --- Edit-mode lifecycle: entering/leaving the Pose and Face tabs ---
 			// =====================================================================
 
-			/**
-			 * Freezes the currently visible animation pose/face so it becomes editable
-			 * instead of being fought (or snapped back to rest) by the mixer. Capturing
-			 * bone quaternions, expression weights, and look-at yaw/pitch BEFORE calling
-			 * stop() is essential: stopping an AnimationAction restores every property it
-			 * was bound to (bones, expression weights, the lookAt proxy quaternion) to its
-			 * pre-play value, which would otherwise erase what was on screen.
-			 * No-op once already frozen (currentAction is undefined either way), so
-			 * switching directly between the Pose and Face tabs never double-captures or
-			 * clobbers in-progress edits.
-			 */
 			function freezeAnimationForEditing() {
 				if (!currentVrm || !currentAction) return;
 
@@ -1612,7 +1499,6 @@
 					freezeAnimationForEditing();
 				}
 
-				// Bone handles/gizmo are Pose-tab-only affordances.
 				if (wasTab === 'pose' && tabName !== 'pose') {
 					deselectBone();
 					boneHandlesGroup.visible = false;
@@ -1631,7 +1517,6 @@
 			tabFaceBtn.addEventListener('click', () => setActiveTab('face'));
 			if (tabFeaturesBtn) tabFeaturesBtn.addEventListener('click', () => setActiveTab('features'));
 
-			// Render initial placeholders in the Pose and Face tabs before any VRM is loaded.
 			buildPoseUI();
 			buildFaceUI();
 
@@ -1662,7 +1547,7 @@
 			function updateStandbyAndBlink(deltaTime, time) {
 				if (!currentVrm) return;
 				
-				// Standby
+				// Standby (only when no animation action is active)
 				if (standbyToggle && standbyToggle.checked && !currentAction) {
 					const s = Math.sin(time * 2);
 					const spine = currentVrm.humanoid.getNormalizedBoneNode('spine');
@@ -1672,8 +1557,8 @@
 					}
 				}
 				
-				// Blink
-				if (blinkToggle && blinkToggle.checked) {
+				// Blink (only when no animation action is active, so it doesn't fight VRMA keyframes)
+				if (blinkToggle && blinkToggle.checked && !currentAction) {
 					if (time - lastBlinkTime > nextBlinkInterval) {
 						lastBlinkTime = time;
 						nextBlinkInterval = 2 + Math.random() * 4;
@@ -1692,17 +1577,16 @@
 			}
 
 			// --- Animation Loop ---
-			const clock = new THREE.Clock();
+			let lastFrameTime = performance.now();
 
 			function animate() {
 				requestAnimationFrame( animate );
 
-				const deltaTime = clock.getDelta();
-				const time = clock.elapsedTime;
+				const now = performance.now();
+				const deltaTime = Math.min((now - lastFrameTime) / 1000, 0.1);
+				lastFrameTime = now;
+				const time = now / 1000;
 
-				// Mixer first, then vrm.update() (which copies normalized bones onto the
-				// raw skeleton) so animation/pose-slider/gizmo writes all land in the same
-				// frame that gets rendered, instead of showing up one frame late.
 				updateStandbyAndBlink(deltaTime, time);
 				if ( currentMixer ) {
 					currentMixer.update( deltaTime );
@@ -1714,10 +1598,10 @@
 					updateBoneHandles();
 				}
 				if ( activeTab === 'face' && followMouseToggle.checked ) {
-					syncLookAtSliders(); // Reflect the live mouse-driven gaze in the (disabled) sliders
+					syncLookAtSliders();
 				}
 
-				controls.update(); // Update orbit controls
+				controls.update();
 				renderer.render( scene, camera );
 			}
 
@@ -1725,11 +1609,11 @@
 			animate();
 
 			// --- Initial Load ---
-			// Load the fixed VRM model when the page loads
-			window.addEventListener('DOMContentLoaded', async () => {
+			// Load default VRM model immediately upon module load
+			(async () => {
 				await loadVRM(VRM_MODEL_URL, 'sample.vrm');
-				updateButtons(); // Update button states after VRM is loaded
-			});
+				updateButtons();
+			})();
 		</script>
 	</body>
 </html>
