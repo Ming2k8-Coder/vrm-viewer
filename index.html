@@ -419,9 +419,12 @@
 					</div>
 				</div>
 				<div class="control-section">
-					<h3><span class="lang-en">Behaviors</span><span class="lang-ja">振る舞い</span></h3>
+					<h3><span class="lang-en">Human Behaviors</span><span class="lang-ja">人間の振る舞い</span></h3>
 					<div class="features-section-col">
-						<label class="features-toggle-label"><input type="checkbox" id="standbyToggle" checked> <span class="lang-en">Standby Motion</span><span class="lang-ja">待機モーション</span></label>
+						<label class="features-toggle-label"><input type="checkbox" id="proceduralIdleToggle" checked> <span class="lang-en">Procedural Standing Motion</span><span class="lang-ja">動的立ち姿モーション (計算アニメ)</span></label>
+						<label for="proceduralIntensitySlider" class="features-label"><span class="lang-en">Motion Intensity:</span><span class="lang-ja">モーション強度:</span> <span id="proceduralIntensityVal">1.0</span></label>
+						<input type="range" id="proceduralIntensitySlider" min="0" max="2" step="0.1" value="1.0">
+						<label class="features-toggle-label"><input type="checkbox" id="eyeSaccadesToggle" checked> <span class="lang-en">Micro Eye Saccades</span><span class="lang-ja">視線微動 (サッカード)</span></label>
 						<label class="features-toggle-label"><input type="checkbox" id="blinkToggle" checked> <span class="lang-en">Auto Blinking</span><span class="lang-ja">自動まばたき</span></label>
 					</div>
 				</div>
@@ -1539,27 +1542,114 @@
 				ambLightVal.textContent = val.toFixed(1);
 			});
 
-			// Blink and standby logic
-			const standbyToggle = document.getElementById('standbyToggle');
+			// --- Advanced Procedural Human Standing Simulator ---
+			const proceduralIdleToggle = document.getElementById('proceduralIdleToggle');
+			const proceduralIntensitySlider = document.getElementById('proceduralIntensitySlider');
+			const proceduralIntensityVal = document.getElementById('proceduralIntensityVal');
+			const eyeSaccadesToggle = document.getElementById('eyeSaccadesToggle');
 			const blinkToggle = document.getElementById('blinkToggle');
-			
+
+			if (proceduralIntensitySlider) {
+				proceduralIntensitySlider.addEventListener('input', (e) => {
+					if (proceduralIntensityVal) proceduralIntensityVal.textContent = parseFloat(e.target.value).toFixed(1);
+				});
+			}
+
+			let saccadeTargetYaw = 0;
+			let saccadeTargetPitch = 0;
+			let saccadeCurrentYaw = 0;
+			let saccadeCurrentPitch = 0;
+			let lastSaccadeTime = 0;
+			let nextSaccadeInterval = 2.5;
 			let lastBlinkTime = 0;
 			let nextBlinkInterval = 3;
-			
+
 			function updateStandbyAndBlink(deltaTime, time) {
 				if (!currentVrm) return;
+
+				const intensity = proceduralIntensitySlider ? parseFloat(proceduralIntensitySlider.value) : 1.0;
+
+				// 1. Procedural Human Standing Motion (Breathing, Postural Sway, Weight Shift)
+				const isProceduralActive = proceduralIdleToggle ? proceduralIdleToggle.checked : true;
 				
-				// Standby (only when no animation action is active)
-				if (standbyToggle && standbyToggle.checked && !currentAction) {
-					const s = Math.sin(time * 2);
-					const spine = currentVrm.humanoid.getNormalizedBoneNode('spine');
-					if(spine) {
-						spine.rotation.x = s * 0.02;
-						spine.rotation.z = Math.cos(time * 1.5) * 0.02;
+				if (isProceduralActive && !currentAction) {
+					const humanoid = currentVrm.humanoid;
+					
+					// Breathing dynamics (~1.8 Hz / ~17 breaths per minute)
+					const breathPhase = Math.sin(time * 1.8);
+					const breathPhaseDelayed = Math.sin(time * 1.8 - 0.4);
+
+					// Weight Shift sway (~0.35 Hz slow postural center of mass shift)
+					const swayPhase = Math.sin(time * 0.35);
+					const swayMicro = Math.sin(time * 0.85);
+
+					// Hips lateral weight shift & subtle roll
+					const hipsNode = humanoid.getNormalizedBoneNode('hips');
+					if (hipsNode) {
+						hipsNode.rotation.z = (swayPhase * 0.02 + swayMicro * 0.005) * intensity;
+						hipsNode.rotation.x = Math.cos(time * 0.35) * 0.01 * intensity;
+					}
+
+					// Spine & Chest Breathing + Counter-sway
+					const spineNode = humanoid.getNormalizedBoneNode('spine');
+					if (spineNode) {
+						spineNode.rotation.x = (breathPhase * 0.015) * intensity;
+						spineNode.rotation.z = (-swayPhase * 0.015) * intensity;
+					}
+
+					const chestNode = humanoid.getNormalizedBoneNode('chest') || humanoid.getNormalizedBoneNode('upperChest');
+					if (chestNode) {
+						chestNode.rotation.x = (breathPhaseDelayed * 0.025) * intensity;
+						chestNode.rotation.z = (-swayPhase * 0.008) * intensity;
+					}
+
+					// Neck & Head subtle balance compensation & micro-drift
+					const neckNode = humanoid.getNormalizedBoneNode('neck');
+					if (neckNode) {
+						neckNode.rotation.x = (-breathPhase * 0.008) * intensity;
+					}
+
+					const headNode = humanoid.getNormalizedBoneNode('head');
+					if (headNode) {
+						const headYaw = (Math.sin(time * 0.5) * 0.012 + Math.cos(time * 0.23) * 0.008) * intensity;
+						const headPitch = (Math.sin(time * 0.7) * 0.01) * intensity;
+						headNode.rotation.y = headYaw;
+						headNode.rotation.x = headPitch;
+						headNode.rotation.z = (-swayPhase * 0.006) * intensity;
+					}
+
+					// Shoulders breathing rise & fall
+					const leftShoulder = humanoid.getNormalizedBoneNode('leftShoulder');
+					const rightShoulder = humanoid.getNormalizedBoneNode('rightShoulder');
+					if (leftShoulder) leftShoulder.rotation.z = (breathPhase * 0.008) * intensity;
+					if (rightShoulder) rightShoulder.rotation.z = (-breathPhase * 0.008) * intensity;
+
+					// Arms subtle natural hanging sway
+					const leftArm = humanoid.getNormalizedBoneNode('leftUpperArm');
+					const rightArm = humanoid.getNormalizedBoneNode('rightUpperArm');
+					if (leftArm) leftArm.rotation.z = (swayPhase * 0.008) * intensity;
+					if (rightArm) rightArm.rotation.z = (-swayPhase * 0.008) * intensity;
+				}
+
+				// 2. Micro Eye Saccades (Human Eye Drift)
+				if (eyeSaccadesToggle && eyeSaccadesToggle.checked && currentVrm.lookAt && !followMouseToggle.checked) {
+					if (time - lastSaccadeTime > nextSaccadeInterval) {
+						lastSaccadeTime = time;
+						nextSaccadeInterval = 1.5 + Math.random() * 3.5;
+						saccadeTargetYaw = (Math.random() - 0.5) * 10;
+						saccadeTargetPitch = (Math.random() - 0.5) * 6;
+					}
+
+					saccadeCurrentYaw += (saccadeTargetYaw - saccadeCurrentYaw) * Math.min(deltaTime * 12.0, 1.0);
+					saccadeCurrentPitch += (saccadeTargetPitch - saccadeCurrentPitch) * Math.min(deltaTime * 12.0, 1.0);
+
+					if (!currentAction) {
+						currentVrm.lookAt.yaw = saccadeCurrentYaw;
+						currentVrm.lookAt.pitch = saccadeCurrentPitch;
 					}
 				}
-				
-				// Blink (only when no animation action is active, so it doesn't fight VRMA keyframes)
+
+				// 3. Auto Blinking
 				if (blinkToggle && blinkToggle.checked && !currentAction) {
 					if (time - lastBlinkTime > nextBlinkInterval) {
 						lastBlinkTime = time;
