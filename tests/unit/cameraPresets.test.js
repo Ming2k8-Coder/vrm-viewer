@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { applyCameraPreset, setCameraFOV } from '../../src/cameraPresets.js';
+import { applyCameraPreset, setCameraFOV, setCameraMode, getCameraMode } from '../../src/cameraPresets.js';
 import * as THREE from 'three';
 
 describe('cameraPresets — applyCameraPreset', () => {
@@ -11,6 +11,7 @@ describe('cameraPresets — applyCameraPreset', () => {
 		controls = {
 			target: new THREE.Vector3(),
 			update: () => {},
+			enabled: true,
 		};
 	});
 
@@ -41,6 +42,16 @@ describe('cameraPresets — applyCameraPreset', () => {
 	it('unknown preset falls back to reset', () => {
 		applyCameraPreset(camera, controls, 'nonExistentPreset');
 		expect(camera.position.z).toBe(5.0);
+	});
+
+	it('setCameraMode toggles camera mode and OrbitControls enabled status', () => {
+		setCameraMode(camera, controls, 'positional');
+		expect(getCameraMode()).toBe('positional');
+		expect(controls.enabled).toBe(false);
+
+		setCameraMode(camera, controls, 'orbital');
+		expect(getCameraMode()).toBe('orbital');
+		expect(controls.enabled).toBe(true);
 	});
 });
 
