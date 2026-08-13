@@ -18,6 +18,7 @@ A web-based VRM (Virtual Reality Model) viewer with VRMA (VRM Animation) support
 - 💡 **Lighting & Behaviors**: Adjust directional and ambient light, and toggle auto-blinking or standby motion
 - 🎛️ **Collapsible UI**: Tabbed control panel (Features / Animation / Pose / Face) that can be hidden entirely with the ☰ toggle
 - 🌐 **Automated Localization**: Automatically switches between English and Japanese UI based on browser preference (with manual override)
+- 🧪 **Automated Testing Suite**: Built-in Vitest sanity checks, Playwright E2E browser tests, and GitHub Actions CI pipeline
 - ⚡ **Fast Performance**: Optimized rendering and animations
 - 📂 **Drag & Drop**: Easily load .vrm and .vrma files by dragging them into the window
 
@@ -44,21 +45,18 @@ Open `index.html` in a web browser to see the demo. The viewer includes:
 ```text
 vrm_viewer/
 ├── index.html              # Main viewer application (Dual Language)
+├── package.json            # NPM dependencies & test scripts
+├── playwright.config.js    # Playwright E2E configuration
+├── tests/
+│   ├── sanity.test.js      # Vitest DOM & HTML sanity tests
+│   └── e2e.spec.js         # Playwright E2E browser tests
+├── .github/workflows/
+│   └── test.yml            # GitHub Actions CI workflow
 ├── VRM/
 │   └── sample.vrm          # Sample VRM model
 ├── VRMA/
-│   ├── Angry.vrma          # Angry emotion animation
-│   ├── Blush.vrma          # Blushing emotion animation
-│   ├── Clapping.vrma       # Clapping hands animation
-│   ├── Goodbye.vrma        # Waving goodbye animation
-│   ├── Jump.vrma           # Jumping action animation
-│   ├── LookAround.vrma     # Looking around animation
-│   ├── Relax.vrma          # Relaxed pose animation
-│   ├── Sad.vrma            # Sad emotion animation
-│   ├── Sleepy.vrma         # Sleepy emotion animation
-│   ├── Surprised.vrma      # Surprised emotion animation
-│   └── Thinking.vrma       # Thinking pose animation
-├── README.md               # This file
+│   └── ...                 # Bundled VRMA animation files
+├── README.md               # English documentation
 └── README-jp.md            # Japanese documentation
 ```
 
@@ -81,52 +79,42 @@ vrm_viewer/
 2. **Start a local web server** (required for loading files):
 
    ```bash
-   # Using Python
-   python -m http.server 8000
-   
    # Using Node.js
    npx serve .
-   
-   # Using PHP
-   php -S localhost:8000
    ```
 
-3. **Open your browser** and navigate to `http://localhost:8000`
+3. **Open your browser** and navigate to `http://localhost:3000`
 4. **Load the VRM model** (automatically loads on page load)
 5. **Select animations** using the VRMA buttons or upload your own files
 6. **Control playback** with Play, Pause, and Stop buttons
 
-## Usage
+## Automated Testing
 
-### Loading VRM Models
+This project includes a comprehensive test suite covering unit DOM sanity checks, Playwright E2E browser tests, and GitHub Actions integration.
 
-The viewer automatically loads the VRM model specified in `index.html`. To use your own model:
+### Installing Test Dependencies
 
-1. **Drag and Drop** your `.vrm` file into the window, OR
-2. Click **Upload VRM** button to select a file from your computer.
+```bash
+npm install
+npx playwright install --with-deps chromium
+```
 
-### Playing VRMA Animations
+### Running Tests
 
-1. Wait for the VRM model to load completely
-2. **Drag and Drop** your `.vrma` file, OR
-3. Click **Upload VRMA** to select a file, OR
-4. Click any of the Sample VRMA animation buttons (Angry, Blush, etc.)
-5. Use the playback controls to manage animation
+```bash
+# Run all tests (Sanity + E2E)
+npm test
 
-### Camera Controls
+# Run Vitest DOM sanity tests only
+npm run test:sanity
 
-- **Rotate**: Left-click and drag to rotate the camera around the model
-- **Pan**: Right-click and drag to move the camera horizontally/vertically
-- **Zoom**: Scroll with mouse wheel to zoom in/out
+# Run Playwright E2E tests only
+npm run test:e2e
+```
 
-### UI Controls
+### CI/CD Pipeline
 
-- **VRMA Animation Buttons**: Select and load different animations
-- **Play**: Start or resume animation playback
-- **Pause**: Pause/unpause the current animation
-- **Stop**: Stop animation and reset to default pose
-- **Bone Handles**: In the Pose tab, click a bone handle to manipulate the model's limbs with the 3D gizmo.
-- **Sliders**: Dynamically interact with bone rotations, facial expressions, look-at targets, and scene lighting.
+The included GitHub Actions workflow (`.github/workflows/test.yml`) automatically runs the full test suite on every `push` and `pull_request` to the `main` branch.
 
 ## Technical Details
 
@@ -150,34 +138,16 @@ The viewer automatically loads the VRM model specified in `index.html`. To use y
 - ✅ Safari 14+
 - ✅ Edge 80+
 
-## Customization
-
-### Adding New Animations
-
-1. Create or obtain VRMA animation files
-2. Place them in the `VRMA/` directory
-3. Update the `VRMA_ANIMATION_URLS` array in `index.html`
-4. Add corresponding buttons in the HTML
-
-### Styling
-
-The interface uses CSS custom properties for easy theming. Key variables:
-
-- Background colors and gradients
-- Button styling and hover effects
-- Control panel appearance
-- Responsive breakpoints
-
 ## License
 
-This project is for demonstration purposes. Please ensure you have appropriate rights for any VRM models and animations you use.
+AGPLv3 (with original MIT License retained for upstream components). See `LICENSE` for details.
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
+4. Run `npm test` to verify all tests pass
 5. Submit a pull request
 
 ## Acknowledgments
