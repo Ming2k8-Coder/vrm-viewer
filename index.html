@@ -243,6 +243,28 @@
 			}
 
 			/* Pose/Face sliders */
+			.pose-top-bar {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				gap: 8px;
+				margin-bottom: 6px;
+			}
+			.pose-mode-select {
+				background: rgba(255, 255, 255, 0.1);
+				color: white;
+				border: 1px solid rgba(255, 255, 255, 0.2);
+				border-radius: 6px;
+				padding: 5px 8px;
+				font-size: 11px;
+				font-weight: bold;
+				cursor: pointer;
+				outline: none;
+			}
+			.pose-mode-select option {
+				background: #222;
+				color: white;
+			}
 			#poseSliders, #poseSlidersDetail, #expressionSliders, #lookAtSliders {
 				display: flex;
 				flex-direction: column;
@@ -386,9 +408,13 @@
 			</div>
 
 			<div id="posePanel" class="tab-panel" hidden>
-				<div>
+				<div class="pose-top-bar">
 					<button id="resetPoseBtn"><span class="lang-en">Reset Pose</span><span class="lang-ja">ポーズリセット</span></button>
-					<label class="inline-toggle"><input type="checkbox" id="handlesToggle" checked /> <span class="lang-en">3D Bone Handles</span><span class="lang-ja">3Dボーンハンドル</span></label>
+					<select id="poseModeSelect" class="pose-mode-select" title="Target pose preset for reset">
+						<option value="dynamicA">Dynamic A-Pose (Human Standing)</option>
+						<option value="rigidT">Rigid T-Pose (Default Rest)</option>
+					</select>
+					<label class="inline-toggle"><input type="checkbox" id="handlesToggle" checked /> <span class="lang-en">3D Handles</span><span class="lang-ja">3Dハンドル</span></label>
 				</div>
 				<div id="poseSliders"></div>
 				<details class="detail-bones">
@@ -1118,11 +1144,25 @@
 				if (refs) refs.readouts[axis].textContent = `${Math.round(deg)}°`;
 			});
 
-			resetPoseBtn.addEventListener('click', () => {
+			const poseModeSelect = document.getElementById('poseModeSelect');
+
+			function applyPoseReset() {
 				if (!currentVrm) return;
 				currentVrm.humanoid.resetNormalizedPose();
+				
+				if (poseModeSelect && poseModeSelect.value === 'rigidT') {
+					if (proceduralIdleToggle) proceduralIdleToggle.checked = false;
+				} else {
+					if (proceduralIdleToggle) proceduralIdleToggle.checked = true;
+				}
+				
 				syncAllSliders();
-			});
+			}
+
+			resetPoseBtn.addEventListener('click', applyPoseReset);
+			if (poseModeSelect) {
+				poseModeSelect.addEventListener('change', applyPoseReset);
+			}
 
 			// --- Viewport gizmo (TransformControls), attached to the selected bone ---
 			const transformControls = new TransformControls(camera, renderer.domElement);
@@ -1570,7 +1610,7 @@
 				const intensity = proceduralIntensitySlider ? parseFloat(proceduralIntensitySlider.value) : 1.0;
 
 				// 1. Procedural Human Standing Motion (Breathing, Postural Sway, Weight Shift)
-				const isProceduralActive = proceduralIdleToggle ? proceduralIdleToggle.checked : true;
+				const isProceduralActive = (proceduralIdleToggle ? proceduralIdleToggle.checked : true) && (poseModeSelect ? poseModeSelect.value !== 'rigidT' : true);
 				
 				if (isProceduralActive && !currentAction) {
 					const humanoid = currentVrm.humanoid;
